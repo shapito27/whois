@@ -1,8 +1,8 @@
-# whois
+# Whois parser
 Lib for parsing whois response. 
 It takes response from any whois server and return object with structured data.
- 
- ##Example
+
+## Example
  **Input**: response of shell command ```whois facebook.com``` pass as ```$whoisText```
  ```
 $parser = new WhoisParser($whoisText);
