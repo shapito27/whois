@@ -3,6 +3,8 @@ Lib for parsing whois response.
 It takes response from any whois server and return object with structured data.
 
 ## Example
+([more detailed example](https://github.com/shapito27/whois/blob/main/tests/WhoisParserTest.php))
+
  **Input**: response of shell command ```whois facebook.com``` pass as ```$whoisText```
  ```
 $parser = new WhoisParser($whoisText);

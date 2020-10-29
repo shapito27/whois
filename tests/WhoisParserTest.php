@@ -159,6 +159,5 @@ WHOIS;
         $parser = new WhoisParser($whoisText);
         $whoisObject = $parser->run();
         self::assertTrue($whoisObject->isRegistered());
-        var_dump($whoisObject);
     }
 }
