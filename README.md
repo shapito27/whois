@@ -2,6 +2,9 @@
 Lib for parsing whois response. 
 It takes response from any whois server and return object with structured data.
 
+
+## Install
+```composer require shapito27/whois-parser```
 ## Example
 ([more detailed example](https://github.com/shapito27/whois/blob/main/tests/WhoisParserTest.php))
 
