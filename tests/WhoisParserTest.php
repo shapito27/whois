@@ -1,4 +1,5 @@
 <?php
+
 namespace Shapito27\Tests;
 
 use PHPUnit\Framework\TestCase;

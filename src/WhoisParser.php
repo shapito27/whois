@@ -3,8 +3,8 @@
 namespace Shapito27\Whois;
 
 use RuntimeException;
-use Shapito27\Whois\DTO\Registrar;
-use Shapito27\Whois\DTO\Whois;
+use Shapito27\Whois\Registrar;
+use Shapito27\Whois\Whois;
 
 /**
  * Class WhoisParser
@@ -73,6 +73,14 @@ class WhoisParser
         'Registrar IANA ID:',
     ];
 
+    private $registrarAbuseContactEmailSynonyms = [
+        'Registrar Abuse Contact Email:',
+    ];
+
+    private $registrarAbuseContactPhoneSynonyms = [
+        'Registrar Abuse Contact Phone:',
+    ];
+
     private $registryDomainIdSynonyms = [
         'Registry Domain ID:',
     ];
@@ -81,8 +89,8 @@ class WhoisParser
 
     /** @var int available for registration */
     public const DOMAIN_STATUS_AVAILABLE = 0;
-    /** @var int domain already registred */
-    public const DOMAIN_STATUS_REGISTRED = 1;
+    /** @var int domain already registered */
+    public const DOMAIN_STATUS_REGISTERED = 1;
     /** @var int status not found. Reasons: parsing problems, wrong whois server response */
     public const DOMAIN_STATUS_NOT_FOUND = 2;
 
@@ -188,9 +196,34 @@ class WhoisParser
                     }
                 }
 
+                foreach ($this->registrarAbuseContactEmailSynonyms as $registrarAbuseContactEmailSynonym) {
+                    if (stripos($line, $registrarAbuseContactEmailSynonym) !== false) {
+                        $registrarAbuseContactEmail = trim(str_ireplace($registrarAbuseContactEmailSynonym, '', $line));
+                        if (!empty($registrarAbuseContactEmail)) {
+                            if ($whoisObject->registrar === null) {
+                                $whoisObject->registrar = new Registrar();
+                            }
+                            $whoisObject->registrar->abuseContactEmail = $registrarAbuseContactEmail;
+                            break;
+                        }
+                    }
+                }
+
+                foreach ($this->registrarAbuseContactPhoneSynonyms as $registrarAbuseContactPhoneSynonym) {
+                    if (stripos($line, $registrarAbuseContactPhoneSynonym) !== false) {
+                        $registrarAbuseContactPhone = trim(str_ireplace($registrarAbuseContactPhoneSynonym, '', $line));
+                        if (!empty($registrarAbuseContactPhone)) {
+                            if ($whoisObject->registrar === null) {
+                                $whoisObject->registrar = new Registrar();
+                            }
+                            $whoisObject->registrar->abuseContactPhone = $registrarAbuseContactPhone;
+                            break;
+                        }
+                    }
+                }
+
                 //looking for name_servers
                 foreach ($this->nameServerSynonyms as $nameServerSynonym) {
-//                    var_dump($line);
                     if (stripos($line, $nameServerSynonym) !== false) {
                         $nameServer = strtolower(trim(str_ireplace($nameServerSynonym, '', $line)));
                         if (!empty($nameServer)) {
@@ -209,7 +242,7 @@ class WhoisParser
 
             // If there are data, we will count this as registered.
             if ($whoisObject->isRegistered()) {
-                $whoisObject->status = self::DOMAIN_STATUS_REGISTRED;
+                $whoisObject->status = self::DOMAIN_STATUS_REGISTERED;
             }
         } catch (RuntimeException $e) {
             $whoisObject->status = self::DOMAIN_STATUS_NOT_FOUND;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Shapito27\Whois\DTO;
+namespace Shapito27\Whois;
 
 /**
  * Class Whois
