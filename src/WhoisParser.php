@@ -2,9 +2,9 @@
 
 namespace Shapito27\Whois;
 
+use Carbon\Carbon;
+use Exception;
 use RuntimeException;
-use Shapito27\Whois\Registrar;
-use Shapito27\Whois\Whois;
 
 /**
  * Class WhoisParser
@@ -15,7 +15,12 @@ class WhoisParser
     /** @var string */
     private $whoisText;
 
+    /** @var string */
+    private $dateFormat = self::DEFAULT_DATE_FORMAT;
+
     private $creationDateSynonyms = [
+        'created............:',
+        'Domain record activated:',
         'domain_dateregistered:',
         'record created:',
         'Creation Date:',
@@ -28,19 +33,11 @@ class WhoisParser
         '[登録年月日]',
     ];
 
-    private $expiryDateSynonyms = [
-        'Registry Expiry Date:',
-        'Expiry date:',
-        'Expire Date:',
-        'Expiration Time:',
-        'paid-till:',
-        'expires:',
-        '[有効期限]',
-    ];
-
     private $updateDateSynonyms = [
+        'Domain record last updated:',
         'domain_datelastmodified:',
         'Last updated date:',
+        'modified...........:',
         '[Last Update]',
         'Updated Date:',
         'Last updated:',
@@ -50,7 +47,21 @@ class WhoisParser
         '[最終更新]',
     ];
 
+
+    private $expiryDateSynonyms = [
+        'expires............:',
+        'Domain expires:',
+        'Registry Expiry Date:',
+        'Expiry date:',
+        'Expire Date:',
+        'Expiration Time:',
+        'paid-till:',
+        'expires:',
+        '[有効期限]',
+    ];
+
     private $nameServerSynonyms = [
+        'nserver............:',
         'Name Server:',
         'nserver:',
         'Name servers:',
@@ -64,6 +75,7 @@ class WhoisParser
     ];
 
     private $registrarSynonyms = [
+        'registrar..........:',
         '[Registrant]',
         'registrar_name:',
         'Registrar:',
@@ -71,6 +83,11 @@ class WhoisParser
 
     private $registrarIanaId = [
         'Registrar IANA ID:',
+    ];
+
+    private $registryDomainIdSynonyms = [
+        'register number....:',
+        'Registry Domain ID:',
     ];
 
     private $registrarAbuseContactEmailSynonyms = [
@@ -81,8 +98,83 @@ class WhoisParser
         'Registrar Abuse Contact Phone:',
     ];
 
-    private $registryDomainIdSynonyms = [
-        'Registry Domain ID:',
+    private $domainNotFoundSynonyms = [
+        'No records matching',
+        'not have an entry',
+        'no existe',
+        'No Matches',
+        'No domain records were found to match',
+        'Not Registered',
+        'not found in our database',
+        'nije registrirana',
+        '% Not Registered',
+        'was not found',
+        'but this server does not have',
+        'AVAILABLE',
+        'do not have an entry in our database matching your query',
+        'Status:			available',
+        'Status: free',
+        'Invalid query or domain name not known',
+        'is free',
+        'nothing found',
+        'No match!!',
+        'not exist',
+        'DOMINIO NO REGISTRADO',
+        'No data was found',
+        'No domains matched',
+        'Object_Not_Found',
+        'does not exist',
+        'No match found',
+        'Domain not registered',
+        'Requested Domain cannot be found',
+        'Status: Not Registered',
+        'Domain unknown',
+        'is available for',
+        'no match',
+        'is not registered',
+        '%ERROR:103',
+        '220 Available',
+        'not found',
+        'is available for purchase',
+        'Status: AVAILABLE',
+        'has no matches',
+        'no entries found',
+        'is available',
+        'No Found',
+        'NO MATCH',
+        'Not found',
+        'No Object Found',
+        'is still available',
+        'Domain not found',
+        'is not valid!',
+        'This domain name has not been registered.',
+        'No information available',
+        'Not found:',
+        '% No match',
+        'Above domain name is not registered to',
+        'Nothing found for this query.',
+        '% no matching objects found',
+        'The domain has not been registered',
+        'NO OBJECT FOUND!',
+        '% No entries found.',
+        'No Match',
+        'does not exist in database',
+        'Not Found.',
+        'No Data Found',
+        'No match',
+        'Domain Not Found',
+        'Available',
+        'Not find MatchingRecord',
+        'NOT FOUND',
+        'is available for registration',
+        'No entries found',
+        'DOMAIN NOT FOUND',
+        'No such domain',
+        'no matching record',
+        'No match for',
+        'Domain Status: No Object Found',
+        'Domain not found.',
+        'not found...',
     ];
 
     private $unnecessaryWord = 'before';
@@ -94,6 +186,7 @@ class WhoisParser
     /** @var int status not found. Reasons: parsing problems, wrong whois server response */
     public const DOMAIN_STATUS_NOT_FOUND = 2;
 
+    public const DEFAULT_DATE_FORMAT = 'Y-m-d H:i:s';
     /**
      * WhoisParser constructor.
      *
@@ -110,7 +203,7 @@ class WhoisParser
     public function run(): Whois
     {
         $whoisObject         = new Whois();
-        $whoisObject->status = self::DOMAIN_STATUS_AVAILABLE;
+        $whoisObject->status = self::DOMAIN_STATUS_NOT_FOUND;
 
         try {
             $info = $this->whoisText;
@@ -127,7 +220,7 @@ class WhoisParser
                             }
                             $creationDate = trim(str_ireplace($creationDateSynonym, '', $line));
                             if (!empty($creationDate)) {
-                                $whoisObject->creationDate = $creationDate;
+                                $whoisObject->creationDate = $this->parseDate($creationDate);
                                 break;
                             }
                         }
@@ -140,7 +233,7 @@ class WhoisParser
                         if (stripos($line, $expiryDateSynonym) !== false) {
                             $expirationDate = trim(str_ireplace($expiryDateSynonym, '', $line));
                             if (!empty($expirationDate)) {
-                                $whoisObject->expirationDate = $expirationDate;
+                                $whoisObject->expirationDate = $this->parseDate($expirationDate);
                                 break;
                             }
                         }
@@ -153,7 +246,7 @@ class WhoisParser
                         if (stripos($line, $updateDateSynonym) !== false) {
                             $updateDate = trim(str_ireplace($updateDateSynonym, '', $line));
                             if (!empty($updateDate)) {
-                                $whoisObject->updateDate = $updateDate;
+                                $whoisObject->updateDate = $this->parseDate($updateDate);
                                 break;
                             }
                         }
@@ -238,16 +331,218 @@ class WhoisParser
                         }
                     }
                 }
+
+                foreach ($this->domainNotFoundSynonyms as $domainNotFoundSynonym) {
+                    if (strpos($line, $domainNotFoundSynonym) !== false) {
+                        $whoisObject->status = self::DOMAIN_STATUS_AVAILABLE;
+                        break;
+                    }
+                }
             }
 
             // If there are data, we will count this as registered.
             if ($whoisObject->isRegistered()) {
+                if ($whoisObject->status === self::DOMAIN_STATUS_AVAILABLE) {
+                    throw new RuntimeException('Conflicted data. Date exists and found prase \'domain not found\'');
+                }
+
                 $whoisObject->status = self::DOMAIN_STATUS_REGISTERED;
             }
-        } catch (RuntimeException $e) {
-            $whoisObject->status = self::DOMAIN_STATUS_NOT_FOUND;
+        } catch (Exception $e) {
+            $whoisObject->status       = self::DOMAIN_STATUS_NOT_FOUND;
+            $whoisObject->errorMessage = $e->getMessage();
         }
 
         return $whoisObject;
+    }
+
+    /**
+     * @param  string  $date
+     *
+     * @return string
+     */
+    private function parseDate(string $date): string
+    {
+        try {
+            return Carbon::parse($date)->format($this->dateFormat);
+        } catch (Exception $exception) {
+            return $date;
+        }
+    }
+
+    /**
+     * @param  string  $dateFormat
+     */
+    public function setDateFormat(string $dateFormat): void
+    {
+        $this->dateFormat = $dateFormat;
+    }
+
+    /**
+     * @param  string[]  $creationDateSynonyms
+     */
+    public function setCreationDateSynonyms(array $creationDateSynonyms): void
+    {
+        $this->creationDateSynonyms = $creationDateSynonyms;
+    }
+
+    /**
+     * @param  string[]  $updateDateSynonyms
+     */
+    public function setUpdateDateSynonyms(array $updateDateSynonyms): void
+    {
+        $this->updateDateSynonyms = $updateDateSynonyms;
+    }
+
+    /**
+     * @param  string[]  $expiryDateSynonyms
+     */
+    public function setExpiryDateSynonyms(array $expiryDateSynonyms): void
+    {
+        $this->expiryDateSynonyms = $expiryDateSynonyms;
+    }
+
+    /**
+     * @param  string[]  $nameServerSynonyms
+     */
+    public function setNameServerSynonyms(array $nameServerSynonyms): void
+    {
+        $this->nameServerSynonyms = $nameServerSynonyms;
+    }
+
+    /**
+     * @param  string[]  $registrarSynonyms
+     */
+    public function setRegistrarSynonyms(array $registrarSynonyms): void
+    {
+        $this->registrarSynonyms = $registrarSynonyms;
+    }
+
+    /**
+     * @param  string[]  $registrarIanaId
+     */
+    public function setRegistrarIanaId(array $registrarIanaId): void
+    {
+        $this->registrarIanaId = $registrarIanaId;
+    }
+
+    /**
+     * @param  string[]  $registryDomainIdSynonyms
+     */
+    public function setRegistryDomainIdSynonyms(array $registryDomainIdSynonyms): void
+    {
+        $this->registryDomainIdSynonyms = $registryDomainIdSynonyms;
+    }
+
+    /**
+     * @param  string[]  $registrarAbuseContactEmailSynonyms
+     */
+    public function setRegistrarAbuseContactEmailSynonyms(array $registrarAbuseContactEmailSynonyms): void
+    {
+        $this->registrarAbuseContactEmailSynonyms = $registrarAbuseContactEmailSynonyms;
+    }
+
+    /**
+     * @param  string[]  $registrarAbuseContactPhoneSynonyms
+     */
+    public function setRegistrarAbuseContactPhoneSynonyms(array $registrarAbuseContactPhoneSynonyms): void
+    {
+        $this->registrarAbuseContactPhoneSynonyms = $registrarAbuseContactPhoneSynonyms;
+    }
+
+    /**
+     * @param  string[]  $domainNotFoundSynonyms
+     */
+    public function setDomainNotFoundSynonyms(array $domainNotFoundSynonyms): void
+    {
+        $this->domainNotFoundSynonyms = $domainNotFoundSynonyms;
+    }
+
+    /**
+     * @param  string  $unnecessaryWord
+     */
+    public function setUnnecessaryWord(string $unnecessaryWord): void
+    {
+        $this->unnecessaryWord = $unnecessaryWord;
+    }
+
+    /**
+     * @param  string  $creationDateSynonym
+     */
+    public function addCreationDateSynonym(string $creationDateSynonym): void
+    {
+        $this->creationDateSynonyms[] = $creationDateSynonym;
+    }
+
+    /**
+     * @param  string  $updateDateSynonym
+     */
+    public function addUpdateDateSynonym(string $updateDateSynonym): void
+    {
+        $this->updateDateSynonyms[] = $updateDateSynonym;
+    }
+
+    /**
+     * @param  string  $expiryDateSynonym
+     */
+    public function addExpiryDateSynonym(string $expiryDateSynonym): void
+    {
+        $this->expiryDateSynonyms[] = $expiryDateSynonym;
+    }
+
+    /**
+     * @param  string  $nameServerSynonym
+     */
+    public function addNameServerSynonym(string $nameServerSynonym): void
+    {
+        $this->nameServerSynonyms[] = $nameServerSynonym;
+    }
+
+    /**
+     * @param  string  $registrarSynonym
+     */
+    public function addRegistrarSynonym(string $registrarSynonym): void
+    {
+        $this->registrarSynonyms[] = $registrarSynonym;
+    }
+
+    /**
+     * @param  string  $registrarIanaId
+     */
+    public function addRegistrarIanaId(string $registrarIanaId): void
+    {
+        $this->registrarIanaId = $registrarIanaId;
+    }
+
+    /**
+     * @param  string  $registryDomainIdSynonym
+     */
+    public function addRegistryDomainIdSynonym(string $registryDomainIdSynonym): void
+    {
+        $this->registryDomainIdSynonyms[] = $registryDomainIdSynonym;
+    }
+
+    /**
+     * @param  string  $registrarAbuseContactEmailSynonym
+     */
+    public function addRegistrarAbuseContactEmailSynonym(string $registrarAbuseContactEmailSynonym): void
+    {
+        $this->registrarAbuseContactEmailSynonyms[] = $registrarAbuseContactEmailSynonym;
+    }
+
+    /**
+     * @param  string  $registrarAbuseContactPhoneSynonym
+     */
+    public function addRegistrarAbuseContactPhoneSynonym(string $registrarAbuseContactPhoneSynonym): void
+    {
+        $this->registrarAbuseContactPhoneSynonyms[] = $registrarAbuseContactPhoneSynonym;
+    }
+
+    /**
+     * @param  string  $domainNotFoundSynonym
+     */
+    public function addDomainNotFoundSynonym(string $domainNotFoundSynonym): void
+    {
+        $this->domainNotFoundSynonyms[] = $domainNotFoundSynonym;
     }
 }

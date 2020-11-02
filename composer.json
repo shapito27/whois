@@ -2,7 +2,7 @@
     "name": "shapito27/whois-parser",
     "description": "Lib to parse whois response",
     "keywords": ["whois","parser"],
-    "version": "1.1.1",
+    "version": "1.2.0",
     "license": "MIT",
     "authors": [
         {
@@ -13,7 +13,8 @@
     ],
     "require": {
         "php": ">=7.1",
-        "ext-json": "*"
+        "ext-json": "*",
+        "nesbot/carbon": "^2.41"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.5",
