@@ -43,19 +43,21 @@ class WhoisParser
         'Last updated:',
         'Last Modified:',
         'modified:',
-        'changed:',
+//        'changed:', // because wrong match with gamla.org.il
         '[最終更新]',
     ];
 
 
     private $expiryDateSynonyms = [
         'expires............:',
-        'Domain expires:',
         'Registry Expiry Date:',
+        'Expiration date:',
+        'Domain expires:',
         'Expiry date:',
         'Expire Date:',
         'Expiration Time:',
         'paid-till:',
+        'Expires On:',
         'expires:',
         '[有効期限]',
     ];
@@ -63,6 +65,7 @@ class WhoisParser
     private $nameServerSynonyms = [
         'nserver............:',
         'Name Server:',
+        'Nameserver:',
         'nserver:',
         'Name servers:',
         'Hostname:',
@@ -78,6 +81,7 @@ class WhoisParser
         'registrar..........:',
         '[Registrant]',
         'registrar_name:',
+        'Registrar Name:',
         'Registrar:',
     ];
 
