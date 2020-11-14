@@ -13,6 +13,9 @@ use RuntimeException;
 class WhoisParser
 {
     /** @var string */
+    private $domainName;
+
+   /** @var string */
     private $whoisText;
 
     /** @var string */
@@ -43,7 +46,7 @@ class WhoisParser
         'Last updated:',
         'Last Modified:',
         'modified:',
-//        'changed:', // because wrong match with gamla.org.il
+        'changed:', //be careful. Could be wrong match for .org.il, .gov.il
         '[最終更新]',
     ];
 
@@ -196,8 +199,9 @@ class WhoisParser
      *
      * @param  string  $whoisText
      */
-    public function __construct(string $whoisText)
+    public function __construct(string $domainName, string $whoisText)
     {
+        $this->domainName = $domainName;
         $this->whoisText = $whoisText;
     }
 
@@ -206,8 +210,23 @@ class WhoisParser
      */
     public function run(): Whois
     {
+        $foundDomainNotFoundSynonym = null;
+        $parseUpdateInfo = true;
+
         $whoisObject         = new Whois();
         $whoisObject->status = self::DOMAIN_STATUS_NOT_FOUND;
+
+        /**
+         * check if domain zone ends with .il
+         * @todo for .il do investigation. It has a lot of lines with keyword "changed:"
+         * changed:      registrar AT ns.il 19980219 (Changed)\n
+         * changed:      domain-registrar AT isoc.org.il 20080110 (Changed)\n
+         * changed:      domain-registrar AT isoc.org.il 20111027 (Assigned)\n
+         * changed:      Managing Registrar 20111027\n
+         */
+        if(preg_match('~\.li$~', $this->getDomainName(), $matches) === true) {
+            $parseUpdateInfo = false;
+        }
 
         try {
             $info = $this->whoisText;
@@ -245,7 +264,7 @@ class WhoisParser
                 }
 
                 //looking for updated date
-                if ($whoisObject->updateDate === null) {
+                if ($parseUpdateInfo && $whoisObject->updateDate === null) {
                     foreach ($this->updateDateSynonyms as $updateDateSynonym) {
                         if (stripos($line, $updateDateSynonym) !== false) {
                             $updateDate = trim(str_ireplace($updateDateSynonym, '', $line));
@@ -339,6 +358,7 @@ class WhoisParser
                 foreach ($this->domainNotFoundSynonyms as $domainNotFoundSynonym) {
                     if (strpos($line, $domainNotFoundSynonym) !== false) {
                         $whoisObject->status = self::DOMAIN_STATUS_AVAILABLE;
+                        $foundDomainNotFoundSynonym = $domainNotFoundSynonym;
                         break;
                     }
                 }
@@ -347,7 +367,7 @@ class WhoisParser
             // If there are data, we will count this as registered.
             if ($whoisObject->isRegistered()) {
                 if ($whoisObject->status === self::DOMAIN_STATUS_AVAILABLE) {
-                    throw new RuntimeException('Conflicted data. Date exists and found prase \'domain not found\'');
+                    throw new RuntimeException('Conflicted data. Date exists and found phrase: ' . $foundDomainNotFoundSynonym);
                 }
 
                 $whoisObject->status = self::DOMAIN_STATUS_REGISTERED;
@@ -548,5 +568,13 @@ class WhoisParser
     public function addDomainNotFoundSynonym(string $domainNotFoundSynonym): void
     {
         $this->domainNotFoundSynonyms[] = $domainNotFoundSynonym;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDomainName(): string
+    {
+        return $this->domainName;
     }
 }
