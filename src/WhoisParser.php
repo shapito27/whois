@@ -194,9 +194,11 @@ class WhoisParser
     public const DOMAIN_STATUS_NOT_FOUND = 2;
 
     public const DEFAULT_DATE_FORMAT = 'Y-m-d H:i:s';
+
     /**
      * WhoisParser constructor.
      *
+     * @param  string  $domainName
      * @param  string  $whoisText
      */
     public function __construct(string $domainName, string $whoisText)
@@ -224,7 +226,7 @@ class WhoisParser
          * changed:      domain-registrar AT isoc.org.il 20111027 (Assigned)\n
          * changed:      Managing Registrar 20111027\n
          */
-        if(preg_match('~\.li$~', $this->getDomainName(), $matches) === true) {
+        if(preg_match('~\.il$~', $this->getDomainName(), $matches) === true) {
             $parseUpdateInfo = false;
         }
 
