@@ -37,7 +37,7 @@ Access to Public Interest Registry WHOIS information is provided to assist perso
 The Registrar of Record identified in this output may have an RDDS service that can be queried for additional information on how to contact the Registrant, Admin, or Tech contact of the queried domain name.\n
 WHOIS;
 
-$parser = new WhoisParser($whoisText);
+$parser = new WhoisParser('un.org', $whoisText);
 $whoisObject = $parser->run();
 
 var_dump($whoisObject);

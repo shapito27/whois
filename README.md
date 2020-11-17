@@ -10,42 +10,33 @@ It takes response from any whois server and return object with structured data.
 
  **Input**: response of shell command ```whois facebook.com``` pass as ```$whoisText```
  ```
-$parser = new WhoisParser($whoisText);
+$parser = new \Shapito27\Whois\WhoisParser('facebook.com', $whoisText);
 $whoisObject = $parser->run();
 var_dump($whoisObject);
 ```
 
  **Output**:
  ```
-   ["status"]=>
-   int(1)
-   ["errorMessage"]=>
-   NULL
-   ["nameServers"]=>
-   array(4) {
-     [0]=>
-     string(17) "a.ns.facebook.com"
-     [1]=>
-     string(17) "b.ns.facebook.com"
-     [2]=>
-     string(17) "c.ns.facebook.com"
-     [3]=>
-     string(17) "d.ns.facebook.com"
-   }
-   ["registrar"]=>
-   object(Shapito27\Whois\DTO\Registrar)#52 (2) {
-     ["id"]=>
-     string(4) "3237"
-     ["name"]=>
-     string(18) "RegistrarSafe, LLC"
-   }
-   ["creationDate"]=>
-   string(20) "1997-03-29T05:00:00Z"
-   ["updateDate"]=>
-   string(20) "2020-03-10T18:53:59Z"
-   ["expirationDate"]=>
-   string(20) "2028-03-30T04:00:00Z"
-   ["registryDomainId"]=>
-   string(23) "2320948_DOMAIN_COM-VRSN"
- }
+Shapito27\Whois\Whois::__set_state(array(
+   'status' => 1,
+   'creationDate' => '1997-03-29 05:00:00',
+   'updateDate' => '2020-03-10 18:53:59',
+   'expirationDate' => '2028-03-30 04:00:00',
+   'nameServers' => 
+  array (
+    0 => 'a.ns.facebook.com',
+    1 => 'b.ns.facebook.com',
+    2 => 'c.ns.facebook.com',
+    3 => 'd.ns.facebook.com',
+  ),
+   'registrar' => 
+  Shapito27\Whois\Registrar::__set_state(array(
+     'id' => '3237',
+     'name' => 'RegistrarSafe, LLC',
+     'abuseContactEmail' => 'abusecomplaints@registrarsafe.com',
+     'abuseContactPhone' => '+1.6503087004',
+  )),
+   'registryDomainId' => '2320948_DOMAIN_COM-VRSN',
+   'errorMessage' => NULL,
+))
 ```

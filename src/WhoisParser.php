@@ -215,27 +215,6 @@ class WhoisParser
         $foundDomainNotFoundSynonym = null;
         $parseUpdateInfo = true;
 
-
-        /**
-         * @todo config file
-         * $common = ['edu', ....];
-         * 'common' => [
-         *      'fields_delimetr' => '\n\n',
-         *      'field_lines_delimetr' => '\n\t'
-         * ],
-         * 'edu' => [
-         *      'fields_delimetr' => '\n\n',
-         *      'field_lines_delimetr' => '\n\t'
-         * ]
-         *
-         * 2 idea
-         * class Common.php with parsing I did
-         * Multiline.php or Edu.php extends some parsing
-         */
-        $multiLineFieldsDomainZones = [
-            '.edu',
-        ];
-
         $whoisObject         = new Whois();
         $whoisObject->status = self::DOMAIN_STATUS_NOT_FOUND;
 

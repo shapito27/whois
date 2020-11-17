@@ -152,7 +152,7 @@ For more information on Whois status codes, please visit
     https://www.icann.org/resources/pages/epp-status-codes-2014-06-16-en.
 WHOIS;
 
-$parser = new WhoisParser($whoisText);
+$parser = new WhoisParser('facebook.com', $whoisText);
 $whoisObject = $parser->run();
 
 var_dump($whoisObject);

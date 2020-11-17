@@ -51,7 +51,7 @@ limits. The data is provided on an 'as-is' basis and may lag behind the\n
 register. Access may be withdrawn or restricted at any time. \n
 ";
 
-$parser = new WhoisParser($whoisText);
+$parser = new WhoisParser('guardian.co.uk', $whoisText);
 $whoisObject = $parser->run();
 
 var_dump($whoisObject);
