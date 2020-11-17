@@ -186,13 +186,6 @@ class WhoisParser
 
     private $unnecessaryWord = 'before';
 
-    /** @var int available for registration */
-    public const DOMAIN_STATUS_AVAILABLE = 0;
-    /** @var int domain already registered */
-    public const DOMAIN_STATUS_REGISTERED = 1;
-    /** @var int status not found. Reasons: parsing problems, wrong whois server response */
-    public const DOMAIN_STATUS_NOT_FOUND = 2;
-
     public const DEFAULT_DATE_FORMAT = 'Y-m-d H:i:s';
 
     /**
@@ -215,8 +208,9 @@ class WhoisParser
         $foundDomainNotFoundSynonym = null;
         $parseUpdateInfo = true;
 
+        $parserResult = new ParserResult();
+        $parserResult->setIsDomainAvailable(false);
         $whoisObject         = new Whois();
-        $whoisObject->status = self::DOMAIN_STATUS_NOT_FOUND;
 
         /**
          * check if domain zone ends with .il
@@ -359,24 +353,27 @@ class WhoisParser
 
                 foreach ($this->domainNotFoundSynonyms as $domainNotFoundSynonym) {
                     if (strpos($line, $domainNotFoundSynonym) !== false) {
-                        $whoisObject->status = self::DOMAIN_STATUS_AVAILABLE;
+                        $parserResult->setIsDomainAvailable(true);
                         $foundDomainNotFoundSynonym = $domainNotFoundSynonym;
                         break;
                     }
                 }
             }
 
-            // If there are data, we will count this as registered.
-            if ($whoisObject->isRegistered()) {
-                if ($whoisObject->status === self::DOMAIN_STATUS_AVAILABLE) {
-                    throw new RuntimeException('Conflicted data. Date exists and found phrase: ' . $foundDomainNotFoundSynonym);
-                }
+            $parserResult->setWhois($whoisObject);
 
-                $whoisObject->status = self::DOMAIN_STATUS_REGISTERED;
+            if ($parserResult->isDomainAvailable()) {
+                $expirationDate = Carbon::parse($whoisObject->expirationDate);
+                $today = Carbon::now();
+                if ($today->lessThan($expirationDate)) {
+                    throw new RuntimeException(
+                        'Found phrase that domain free but parsed expiration date in the future. Found phrase: '
+                        . $foundDomainNotFoundSynonym
+                    );
+                }
             }
         } catch (Exception $e) {
-            $whoisObject->status       = self::DOMAIN_STATUS_NOT_FOUND;
-            $whoisObject->errorMessage = $e->getMessage();
+            $parserResult->setErrorMessage($e->getMessage());
         }
 
         return $whoisObject;

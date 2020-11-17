@@ -4,15 +4,15 @@ namespace Shapito27\Whois;
 
 /**
  * Class Whois
- * @package Shapito27\Whois\DTO
+ * @package Shapito27\Whois
  */
 class Whois
 {
-    /** @var int */
-    public $status;
-
+    /** @var string */
     public $creationDate;
+    /** @var string */
     public $updateDate;
+    /** @var string */
     public $expirationDate;
 
     /** @var array */
@@ -23,15 +23,4 @@ class Whois
 
     /** @var string */
     public $registryDomainId;
-
-    /** @var string */
-    public $errorMessage;
-
-    /**
-     * @return bool
-     */
-    public function isRegistered(): bool
-    {
-        return $this->creationDate !== null || $this->expirationDate !== null;
-    }
 }
