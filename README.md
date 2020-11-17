@@ -10,8 +10,18 @@ It takes response from any whois server and return object with structured data.
 
  **Input**: response of shell command ```whois facebook.com``` pass as ```$whoisText```
  ```
+//set domain name and output of his whois data
 $parser = new \Shapito27\Whois\WhoisParser('facebook.com', $whoisText);
-$whoisObject = $parser->run();
+//you can set date format in result. Default: 'Y-m-d H:i:s'
+$parser->setDateFormat('Y-m-d');
+//run parsing
+$parserResult = $parser->run();
+//check if any error
+if (!empty($whoisParserResult->getErrorMessage())) {
+     die($whoisParserResult->getErrorMessage());
+ }
+//getting whois object
+$whoisObject = $parserResult->getWhois();
 var_dump($whoisObject);
 ```
 

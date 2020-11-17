@@ -10,13 +10,15 @@ namespace Shapito27\Whois;
 class ParserResult
 {
     /** @var Whois */
-    public $whois;
+    protected $whois;
     /** @var bool */
-    public $isDomainAvailable;
+    protected $isDomainAvailable;
     /** @var string */
-    public $errorMessage;
+    protected $errorMessage;
 
-
+    /**
+     * @return Whois
+     */
     public function getWhois(): Whois
     {
         return $this->whois;

@@ -201,9 +201,9 @@ class WhoisParser
     }
 
     /**
-     * @return Whois
+     * @return ParserResult
      */
-    public function run(): Whois
+    public function run(): ParserResult
     {
         $foundDomainNotFoundSynonym = null;
         $parseUpdateInfo = true;
@@ -372,11 +372,18 @@ class WhoisParser
                     );
                 }
             }
+
+            if (empty($whoisObject->expirationDate) && empty($whoisObject->updateDate)
+                && $parserResult->isDomainAvailable() === false) {
+                throw new RuntimeException(
+                    'Updated date and Expiration date is not parsed. No phrase that domain is not found'
+                );
+            }
         } catch (Exception $e) {
-            $parserResult->setErrorMessage($e->getMessage());
+            $parserResult->setErrorMessage($this->getDomainName() . ' error. ' . $e->getMessage());
         }
 
-        return $whoisObject;
+        return $parserResult;
     }
 
     /**
