@@ -54,6 +54,7 @@ class WhoisParser
     private $expiryDateSynonyms = [
         'expires............:',
         'Registry Expiry Date:',
+        'option expiration date:',
         'Expiration date:',
         'Domain expires:',
         'Expiry date:',
