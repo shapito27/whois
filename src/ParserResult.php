@@ -3,6 +3,8 @@
 
 namespace Shapito27\Whois;
 
+use RuntimeException;
+
 /**
  * Class ParserResult
  * @package Shapito27\Whois
@@ -13,7 +15,7 @@ class ParserResult
     protected $whois;
     /** @var bool */
     protected $isDomainAvailable;
-    /** @var string */
+    /** @var null|string */
     protected $errorMessage;
 
     /**
@@ -21,6 +23,10 @@ class ParserResult
      */
     public function getWhois(): Whois
     {
+        if ($this->whois === null) {
+            throw new RuntimeException('Whois is not set.');
+        }
+
         return $this->whois;
     }
 
@@ -53,7 +59,7 @@ class ParserResult
      */
     public function getErrorMessage(): string
     {
-        return $this->errorMessage;
+        return $this->errorMessage ?? '';
     }
 
     /**
