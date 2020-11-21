@@ -364,36 +364,41 @@ class WhoisParser
 
             $parserResult->setWhois($whoisObject);
 
-            if ($parserResult->isDomainAvailable()) {
-                $expirationDate = $this->parseDate($whoisObject->expirationDate);
-                $today = Carbon::now();
-                if ($today->lessThan($expirationDate)) {
-                    throw new RuntimeException(
-                        'Found phrase that domain free but parsed expiration date in the future. Found phrase: '
-                        . $foundDomainNotFoundSynonym
-                    );
-                }
+            try {
+                if ($parserResult->isDomainAvailable()) {
+                    $expirationDate = $this->parseDate($whoisObject->expirationDate);
+                    $today          = Carbon::now();
+                    if ($today->lessThan($expirationDate)) {
+                        throw new RuntimeException(
+                            'Found phrase that domain free but parsed expiration date in the future. Found phrase: '
+                            .$foundDomainNotFoundSynonym
+                        );
+                    }
 
-                if (!empty($whoisObject->nameServers)) {
-                    throw new RuntimeException(
-                        'Found phrase that domain free but domain has nameservers. Found phrase: '
-                        .$foundDomainNotFoundSynonym
-                    );
-                }
+                    if (!empty($whoisObject->nameServers)) {
+                        throw new RuntimeException(
+                            'Found phrase that domain free but domain has nameservers. Found phrase: '
+                            .$foundDomainNotFoundSynonym
+                        );
+                    }
 
-                if (!empty($whoisObject->registrar)) {
-                    throw new RuntimeException(
-                        'Found phrase that domain free but domain has registrar. Found phrase: '
-                        .$foundDomainNotFoundSynonym
-                    );
-                }
+                    if (!empty($whoisObject->registrar)) {
+                        throw new RuntimeException(
+                            'Found phrase that domain free but domain has registrar. Found phrase: '
+                            .$foundDomainNotFoundSynonym
+                        );
+                    }
 
-                if (!empty($parsedWhoisDataObject->registryDomainId)) {
-                    throw new RuntimeException(
-                        'Found phrase that domain free but domain has registryDomainId. Found phrase: '
-                        .$foundDomainNotFoundSynonym
-                    );
+                    if (!empty($parsedWhoisDataObject->registryDomainId)) {
+                        throw new RuntimeException(
+                            'Found phrase that domain free but domain has registryDomainId. Found phrase: '
+                            .$foundDomainNotFoundSynonym
+                        );
+                    }
                 }
+            } catch (RuntimeException $exception) {
+                $parserResult->setIsDomainAvailable(false);
+                throw $exception;
             }
 
             if (empty($whoisObject->expirationDate) && empty($whoisObject->updateDate)
