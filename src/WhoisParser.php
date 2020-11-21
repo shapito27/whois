@@ -366,13 +366,15 @@ class WhoisParser
 
             try {
                 if ($parserResult->isDomainAvailable()) {
-                    $expirationDate = $this->parseDate($whoisObject->expirationDate);
-                    $today          = Carbon::now();
-                    if ($today->lessThan($expirationDate)) {
-                        throw new RuntimeException(
-                            'Found phrase that domain free but parsed expiration date in the future. Found phrase: '
-                            .$foundDomainNotFoundSynonym
-                        );
+                    if ($whoisObject->expirationDate !== null) {
+                        $expirationDate = $this->parseDate($whoisObject->expirationDate);
+                        $today          = Carbon::now();
+                        if ($today->lessThan($expirationDate)) {
+                            throw new RuntimeException(
+                                'Found phrase that domain free but parsed expiration date in the future. Found phrase: '
+                                .$foundDomainNotFoundSynonym
+                            );
+                        }
                     }
 
                     if (!empty($whoisObject->nameServers)) {
