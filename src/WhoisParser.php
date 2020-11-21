@@ -3,6 +3,7 @@
 namespace Shapito27\Whois;
 
 use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 use Exception;
 use RuntimeException;
 
@@ -344,7 +345,7 @@ class WhoisParser
                             if (strpos($nameServer, ' ') !== false) {
                                 $nameServer = substr($nameServer, 0, strpos($nameServer, ' '));
                             }
-                            if (in_array($nameServer, $whoisObject->nameServers) === false) {
+                            if (in_array($nameServer, $whoisObject->nameServers, true) === false) {
                                 $whoisObject->nameServers[] = $nameServer;
                             }
                             break;
@@ -364,12 +365,33 @@ class WhoisParser
             $parserResult->setWhois($whoisObject);
 
             if ($parserResult->isDomainAvailable()) {
-                $expirationDate = Carbon::parse($whoisObject->expirationDate);
+                $expirationDate = $this->parseDate($whoisObject->expirationDate);
                 $today = Carbon::now();
                 if ($today->lessThan($expirationDate)) {
                     throw new RuntimeException(
                         'Found phrase that domain free but parsed expiration date in the future. Found phrase: '
                         . $foundDomainNotFoundSynonym
+                    );
+                }
+
+                if (!empty($whoisObject->nameServers)) {
+                    throw new RuntimeException(
+                        'Found phrase that domain free but domain has nameservers. Found phrase: '
+                        .$foundDomainNotFoundSynonym
+                    );
+                }
+
+                if (!empty($whoisObject->registrar)) {
+                    throw new RuntimeException(
+                        'Found phrase that domain free but domain has registrar. Found phrase: '
+                        .$foundDomainNotFoundSynonym
+                    );
+                }
+
+                if (!empty($parsedWhoisDataObject->registryDomainId)) {
+                    throw new RuntimeException(
+                        'Found phrase that domain free but domain has registryDomainId. Found phrase: '
+                        .$foundDomainNotFoundSynonym
                     );
                 }
             }
@@ -396,6 +418,15 @@ class WhoisParser
     {
         try {
             return Carbon::parse($date)->format($this->dateFormat);
+        } catch (InvalidFormatException $invalidFormatException) {
+            //try to change format
+            try {
+                $date = str_replace('.', '-', $date);
+
+                return Carbon::parse($date)->format($this->dateFormat);
+            } catch (Exception $exception) {
+                return $date;
+            }
         } catch (Exception $exception) {
             return $date;
         }
