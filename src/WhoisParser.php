@@ -400,7 +400,7 @@ class WhoisParser
                 }
             } catch (RuntimeException $exception) {
                 $parserResult->setIsDomainAvailable(false);
-                throw $exception;
+                throw new RuntimeException('Availability was switched to false.', 0, $exception);
             }
 
             if (empty($whoisObject->expirationDate) && empty($whoisObject->updateDate)
