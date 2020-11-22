@@ -308,7 +308,12 @@ class WhoisParser
                 );
             }
         } catch (Exception $e) {
-            $parserResult->setErrorMessage($this->getDomainName().' error. '.$e->getMessage());
+            $errorMessage = $e->getMessage();
+            while($e->getPrevious() !== null) {
+                $e = $e->getPrevious();
+                $errorMessage .= $e->getMessage();
+            }
+            $parserResult->setErrorMessage($errorMessage);
         }
 
         return $parserResult;
