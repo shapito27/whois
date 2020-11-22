@@ -17,7 +17,7 @@ $parser = new \Shapito27\Whois\WhoisParser('facebook.com', $whoisText);
 $parser->setDateFormat('Y-m-d H:i:s');
 
 //run parsing whois data
-$parserResult = $parser->run();
+$whoisParserResult = $parser->run();
 
 //check if any error
 if (!empty($whoisParserResult->getErrorMessage())) {
@@ -25,7 +25,7 @@ if (!empty($whoisParserResult->getErrorMessage())) {
  }
 
 //get and output whois object 
-var_dump($parserResult->getWhois());
+var_dump($whoisParserResult->getWhois());
 ```
 
  **Output**:
@@ -52,4 +52,35 @@ Shapito27\Whois\Whois::__set_state(array(
    'registryDomainId' => '2320948_DOMAIN_COM-VRSN',
    'errorMessage' => NULL,
 ))
+```
+**Parse inside loop**
+
+To avoid parsing config on each iterration define parser outside the loop. 
+ ```
+$domains = [
+'facebook.com' => 'facebook whois text',
+ 'google.com' => 'google whois text'
+];
+
+//set domain name and output of its whois data
+$parser = new \Shapito27\Whois\WhoisParser();
+
+//you can set dates format in result
+$parser->setDateFormat('Y-m-d H:i:s');
+foreach($domains as $domain => $whoisText) {
+    $parser->setDomainName($domain);
+    
+    $parser->setWhoisText($whoisText);
+    
+    //run parsing whois data
+    $whoisParserResult = $parser->run();
+    
+    //check if any error
+    if (!empty($whoisParserResult->getErrorMessage())) {
+         die($whoisParserResult->getErrorMessage());
+     }
+    
+    //get and output whois object 
+    var_dump($whoisParserResult->getWhois());
+}
 ```

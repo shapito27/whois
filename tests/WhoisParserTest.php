@@ -3,14 +3,22 @@
 namespace Shapito27\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Shapito27\Whois\ParserResult;
 use Shapito27\Whois\WhoisParser;
 
 class WhoisParserTest extends TestCase
 {
-    public function testParsing()
+    protected $domainName;
+    protected $whoisText;
+    protected $parserResult;
+
+    protected function setUp(): void
     {
+        parent::setUp();
+
+        $this->domainName = 'facebook.com';
         //whois facebook.com
-        $whoisText = <<<WHOIS
+        $this->whoisText = <<<WHOIS
    Domain Name: FACEBOOK.COM
    Registry Domain ID: 2320948_DOMAIN_COM-VRSN
    Registrar WHOIS Server: whois.registrarsafe.com
@@ -156,9 +164,72 @@ query, you acknowledge and agree to abide by the foregoing terms, conditions and
 For more information on Whois status codes, please visit
     https://www.icann.org/resources/pages/epp-status-codes-2014-06-16-en.
 WHOIS;
+        $parser = new WhoisParser($this->domainName, $this->whoisText);
+        $this->parserResult = $parser->run();
+    }
 
-        $parser = new WhoisParser($whoisText);
-        $whoisObject = $parser->run();
-        self::assertTrue($whoisObject->isRegistered());
+    public function testSuccessfulParsingHasResultParsing(): void
+    {
+        self::assertInstanceOf(ParserResult::class, $this->parserResult);
+    }
+
+    public function testSuccessfulParsingNoError(): void
+    {
+        self::assertEmpty($this->parserResult->getErrorMessage());
+    }
+
+    public function testSuccessfulParsingHasNotEmptyWhoisFieldExpirationDate(): void
+    {
+        self::assertNotEmpty($this->parserResult->getWhois()->expirationDate);
+    }
+
+    public function testSuccessfulParsingHasNotEmptyWhoisFieldCreationDate(): void
+    {
+        self::assertNotEmpty($this->parserResult->getWhois()->creationDate);
+    }
+
+    public function testSuccessfulParsingHasNotEmptyWhoisFieldUpdateDate(): void
+    {
+        self::assertNotEmpty($this->parserResult->getWhois()->updateDate);
+    }
+
+    public function testSuccessfulParsingHasNotEmptyWhoisFieldRegistryDomainId(): void
+    {
+        self::assertNotEmpty($this->parserResult->getWhois()->registryDomainId);
+    }
+
+    public function testSuccessfulParsingHasNotEmptyWhoisFieldNameServers(): void
+    {
+        self::assertNotEmpty($this->parserResult->getWhois()->nameServers);
+    }
+
+    public function testSuccessfulParsingHasNotNullWhoisFieldRegistrar(): void
+    {
+        self::assertNotNull($this->parserResult->getWhois()->registrar);
+    }
+
+    public function testSuccessfulParsingWhoisFieldRegistrarHasNotNullId(): void
+    {
+        self::assertNotNull($this->parserResult->getWhois()->registrar->id);
+    }
+
+    public function testSuccessfulParsingWhoisFieldRegistrarHasNotNullAbuseContactPhone(): void
+    {
+        self::assertNotNull($this->parserResult->getWhois()->registrar->abuseContactPhone);
+    }
+
+    public function testSuccessfulParsingWhoisFieldRegistrarHasNotNullAbuseContactEmail(): void
+    {
+        self::assertNotNull($this->parserResult->getWhois()->registrar->abuseContactEmail);
+    }
+
+    public function testSuccessfulParsingWhoisFieldRegistrarHasNotEmptyName(): void
+    {
+        self::assertNotEmpty($this->parserResult->getWhois()->registrar->name);
+    }
+
+    public function testSuccessfulParsingIsDomainAvailableFalse(): void
+    {
+        self::assertFalse($this->parserResult->isDomainAvailable());
     }
 }

@@ -13,182 +13,57 @@ use RuntimeException;
  */
 class WhoisParser
 {
-    /** @var string */
+    /** @var string|null */
     private $domainName;
 
-   /** @var string */
+    /** @var string|null */
     private $whoisText;
 
     /** @var string */
     private $dateFormat = self::DEFAULT_DATE_FORMAT;
 
-    private $creationDateSynonyms = [
-        'created............:',
-        'Domain record activated:',
-        'domain_dateregistered:',
-        'record created:',
-        'Creation Date:',
-        'created:',
-        'Registered on:',
-        'Registered:',
-        'Registration Time:',
-        '[最終更新]',
-        '[接続年月日]',
-        '[登録年月日]',
-    ];
+    /** @var array */
+    private $creationDateSynonyms = [];
+    /** @var array */
+    private $updateDateSynonyms = [];
+    /** @var array */
+    private $expiryDateSynonyms = [];
+    /** @var array */
+    private $nameServerSynonyms = [];
+    /** @var array */
+    private $registrarSynonyms = [];
 
-    private $updateDateSynonyms = [
-        'Domain record last updated:',
-        'domain_datelastmodified:',
-        'Last updated date:',
-        'modified...........:',
-        '[Last Update]',
-        'Updated Date:',
-        'Last updated:',
-        'Last Modified:',
-        'modified:',
-        'changed:', //be careful. Could be wrong match for .org.il, .gov.il
-        '[最終更新]',
-    ];
-
-
-    private $expiryDateSynonyms = [
-        'expires............:',
-        'Registry Expiry Date:',
-        'option expiration date:',
-        'Expiration date:',
-        'Domain expires:',
-        'Expiry date:',
-        'Expire Date:',
-        'Expiration Time:',
-        'paid-till:',
-        'Expires On:',
-        'expires:',
-        '[有効期限]',
-    ];
-
-    private $nameServerSynonyms = [
-        'nserver............:',
-        'Name Server:',
-        'Nameserver:',
-        'nserver:',
-        'Name servers:',
-        'Hostname:',
-        'p. [ネームサーバ]',
-        'ns_name_01:',
-        'ns_name_02:',
-        'ns_name_03:',
-        'ns_name_04:',
-        '[Name Server]',
-    ];
-
-    private $registrarSynonyms = [
-        'registrar..........:',
-        '[Registrant]',
-        'registrar_name:',
-        'Registrar Name:',
-        'Registrar:',
-    ];
-
+    /** @var array */
     private $registrarIanaId = [
         'Registrar IANA ID:',
     ];
 
+    /** @var array */
     private $registryDomainIdSynonyms = [
         'register number....:',
         'Registry Domain ID:',
     ];
 
+    /** @var array */
     private $registrarAbuseContactEmailSynonyms = [
         'Registrar Abuse Contact Email:',
     ];
 
+    /** @var array */
     private $registrarAbuseContactPhoneSynonyms = [
         'Registrar Abuse Contact Phone:',
     ];
 
-    private $domainNotFoundSynonyms = [
-        'No records matching',
-        'not have an entry',
-        'no existe',
-        'No Matches',
-        'No domain records were found to match',
-        'Not Registered',
-        'not found in our database',
-        'nije registrirana',
-        '% Not Registered',
-        'was not found',
-        'but this server does not have',
-        'AVAILABLE',
-        'do not have an entry in our database matching your query',
-        'Status:			available',
-        'Status: free',
-        'Invalid query or domain name not known',
-        'is free',
-        'nothing found',
-        'No match!!',
-        'not exist',
-        'DOMINIO NO REGISTRADO',
-        'No data was found',
-        'No domains matched',
-        'Object_Not_Found',
-        'does not exist',
-        'No match found',
-        'Domain not registered',
-        'Requested Domain cannot be found',
-        'Status: Not Registered',
-        'Domain unknown',
-        'is available for',
-        'no match',
-        'is not registered',
-        '%ERROR:103',
-        '220 Available',
-        'not found',
-        'is available for purchase',
-        'Status: AVAILABLE',
-        'has no matches',
-        'no entries found',
-        'is available',
-        'No Found',
-        'NO MATCH',
-        'Not found',
-        'No Object Found',
-        'is still available',
-        'Domain not found',
-        'is not valid!',
-        'This domain name has not been registered.',
-        'No information available',
-        'Not found:',
-        '% No match',
-        'Above domain name is not registered to',
-        'Nothing found for this query.',
-        '% no matching objects found',
-        'The domain has not been registered',
-        'NO OBJECT FOUND!',
-        '% No entries found.',
-        'No Match',
-        'does not exist in database',
-        'Not Found.',
-        'No Data Found',
-        'No match',
-        'Domain Not Found',
-        'Available',
-        'Not find MatchingRecord',
-        'NOT FOUND',
-        'is available for registration',
-        'No entries found',
-        'DOMAIN NOT FOUND',
-        'No such domain',
-        'no matching record',
-        'No match for',
-        'Domain Status: No Object Found',
-        'Domain not found.',
-        'not found...',
-    ];
+    /** @var array */
+    private $domainNotFoundSynonyms = [];
 
+    /** @var string */
     private $unnecessaryWord = 'before';
 
+    /** @var string */
     public const DEFAULT_DATE_FORMAT = 'Y-m-d H:i:s';
+    /** @var string */
+    private const DB_PATH = __DIR__.'/../db/';
 
     /**
      * WhoisParser constructor.
@@ -196,10 +71,33 @@ class WhoisParser
      * @param  string  $domainName
      * @param  string  $whoisText
      */
-    public function __construct(string $domainName, string $whoisText)
+    public function __construct(string $domainName = null, string $whoisText = null)
     {
-        $this->domainName = $domainName;
-        $this->whoisText = $whoisText;
+        if ($domainName !== null) {
+            $this->setDomainName($domainName);
+        }
+        if ($whoisText !== null) {
+            $this->setWhoisText($whoisText);
+        }
+
+        $this->setCreationDateSynonyms(
+            json_decode(file_get_contents(self::DB_PATH.'creation_date_synonyms.json'), true)['values']
+        );
+        $this->setUpdateDateSynonyms(
+            json_decode(file_get_contents(self::DB_PATH.'update_date_synonyms.json'), true)['values']
+        );
+        $this->setExpiryDateSynonyms(
+            json_decode(file_get_contents(self::DB_PATH.'expiry_date_synonyms.json'), true)['values']
+        );
+        $this->setNameServerSynonyms(
+            json_decode(file_get_contents(self::DB_PATH.'name_server_synonyms.json'), true)['values']
+        );
+        $this->setDomainNotFoundSynonyms(
+            json_decode(file_get_contents(self::DB_PATH.'domain_not_found_synonyms.json'), true)['values']
+        );
+        $this->setRegistrarSynonyms(
+            json_decode(file_get_contents(self::DB_PATH.'registrar_synonyms.json'), true)['values']
+        );
     }
 
     /**
@@ -208,11 +106,11 @@ class WhoisParser
     public function run(): ParserResult
     {
         $foundDomainNotFoundSynonym = null;
-        $parseUpdateInfo = true;
+        $parseUpdateInfo            = true;
 
         $parserResult = new ParserResult();
         $parserResult->setIsDomainAvailable(false);
-        $whoisObject         = new Whois();
+        $whoisObject = new Whois();
 
         /**
          * check if domain zone ends with .il
@@ -222,7 +120,7 @@ class WhoisParser
          * changed:      domain-registrar AT isoc.org.il 20111027 (Assigned)\n
          * changed:      Managing Registrar 20111027\n
          */
-        if(preg_match('~\.il$~', $this->getDomainName(), $matches) === 1) {
+        if (preg_match('~\.il$~', $this->getDomainName(), $matches) === 1) {
             $parseUpdateInfo = false;
         }
 
@@ -410,7 +308,7 @@ class WhoisParser
                 );
             }
         } catch (Exception $e) {
-            $parserResult->setErrorMessage($this->getDomainName() . ' error. ' . $e->getMessage());
+            $parserResult->setErrorMessage($this->getDomainName().' error. '.$e->getMessage());
         }
 
         return $parserResult;
@@ -621,5 +519,21 @@ class WhoisParser
     public function getDomainName(): string
     {
         return $this->domainName;
+    }
+
+    /**
+     * @param  string  $domainName
+     */
+    public function setDomainName(string $domainName): void
+    {
+        $this->domainName = $domainName;
+    }
+
+    /**
+     * @param  string  $whoisText
+     */
+    public function setWhoisText(string $whoisText): void
+    {
+        $this->whoisText = $whoisText;
     }
 }

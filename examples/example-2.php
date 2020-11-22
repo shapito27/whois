@@ -38,6 +38,6 @@ The Registrar of Record identified in this output may have an RDDS service that 
 WHOIS;
 
 $parser = new WhoisParser('un.org', $whoisText);
-$whoisObject = $parser->run();
+$whoisParserResult = $parser->run();
 
-var_dump($whoisObject);
+var_dump($whoisParserResult->getWhois());

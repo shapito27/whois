@@ -8,15 +8,15 @@ namespace Shapito27\Whois;
  */
 class Registrar
 {
-    /** @var int */
+    /** @var int|null */
     public $id;
 
     /** @var string */
     public $name;
 
-    /** @var string */
+    /** @var string|null */
     public $abuseContactEmail;
 
-    /** @var string */
+    /** @var string|null */
     public $abuseContactPhone;
 }

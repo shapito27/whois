@@ -52,6 +52,6 @@ register. Access may be withdrawn or restricted at any time. \n
 ";
 
 $parser = new WhoisParser('guardian.co.uk', $whoisText);
-$whoisObject = $parser->run();
+$whoisParserResult = $parser->run();
 
-var_dump($whoisObject);
+var_dump($whoisParserResult->getWhois());
