@@ -269,29 +269,26 @@ class WhoisParser
                         $today          = Carbon::now();
                         if ($today->lessThan($expirationDate)) {
                             throw new RuntimeException(
-                                'Found phrase that domain free but parsed expiration date in the future. Found phrase: '
-                                .$foundDomainNotFoundSynonym
+                                'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain expiration date is in the future.'
                             );
                         }
                     }
 
                     if (!empty($whoisObject->nameServers)) {
                         throw new RuntimeException(
-                            'Found phrase that domain free but domain has nameservers. Found phrase: '
-                            .$foundDomainNotFoundSynonym
+                            'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain nameServers is not empty.'
                         );
                     }
 
                     if (!empty($whoisObject->registrar)) {
                         throw new RuntimeException(
-                            'Found phrase that domain free but domain has registrar. Found phrase: '
-                            .$foundDomainNotFoundSynonym
+                            'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain has registrar.'
                         );
                     }
 
                     if (!empty($parsedWhoisDataObject->registryDomainId)) {
                         throw new RuntimeException(
-                            'Found phrase that domain free but domain has registryDomainId. Found phrase: '
+                            'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain has registryDomainId.'
                             .$foundDomainNotFoundSynonym
                         );
                     }
