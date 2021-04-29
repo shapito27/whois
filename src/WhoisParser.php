@@ -49,7 +49,6 @@ class WhoisParser
 
         try {
             $formatter = $this->getFormatter();
-
             $whoisObject = $formatter->convertToWhoisObject($this->whoisText);
             $isDomainAvailableResult = $formatter->isDomainAvailable($this->whoisText, $whoisObject);
             $parserResult->setIsDomainAvailable($isDomainAvailableResult['is_available']);

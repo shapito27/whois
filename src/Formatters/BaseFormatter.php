@@ -21,19 +21,6 @@ class BaseFormatter extends AbstractFormatter
         $parseUpdateInfo            = true;
         $whoisObject = new Whois();
 
-//        //@todo move it to ILFormatter
-//        /**
-//         * check if domain zone ends with .il
-//         * @todo for .il do investigation. It has a lot of lines with keyword "changed:"
-//         * changed:      registrar AT ns.il 19980219 (Changed)\n
-//         * changed:      domain-registrar AT isoc.org.il 20080110 (Changed)\n
-//         * changed:      domain-registrar AT isoc.org.il 20111027 (Assigned)\n
-//         * changed:      Managing Registrar 20111027\n
-//         */
-//        if (preg_match('~\.il$~', $this->getDomainName(), $matches) === 1) {
-//            $parseUpdateInfo = false;
-//        }
-
         //reformant Whois Plain Text before explode it to strings
         $whoisPlainText = $this->reformatWhoisPlainText($whoisPlainText);
         $whoisStrings = explode($this->eol, $whoisPlainText);
@@ -51,80 +38,31 @@ class BaseFormatter extends AbstractFormatter
         foreach ($whoisStrings as $lineNumber => $line) {
             if ($whoisObject->creationDate === null) {
                 //looking for creation date
-                foreach ($this->creationDateSynonyms as $creationDateSynonym) {
-                    if (stripos($line, $creationDateSynonym) !== false) {
-                        if (strpos($line, $this->unnecessaryWord) !== false) {
-                            $line = str_replace($this->unnecessaryWord, '', $line);
-                        }
-                        $creationDate = trim(str_ireplace($creationDateSynonym, '', $line));
-                        if (!empty($creationDate)) {
-                            $whoisObject->creationDate = $this->parseDate($creationDate);
-                            break;
-                        }
-                    }
-                }
+                $whoisObject->creationDate = $this->parseCreationDate($line);
             }
 
             //looking for expiry date
             if ($whoisObject->expirationDate === null) {
-                foreach ($this->expiryDateSynonyms as $expiryDateSynonym) {
-                    if (stripos($line, $expiryDateSynonym) !== false) {
-                        $expirationDate = trim(str_ireplace($expiryDateSynonym, '', $line));
-                        if (!empty($expirationDate)) {
-                            $whoisObject->expirationDate = $this->parseDate($expirationDate);
-                            break;
-                        }
-                    }
-                }
+                $whoisObject->expirationDate = $this->parseExpirationDate($line);
             }
 
             //looking for updated date
             if ($parseUpdateInfo && $whoisObject->updateDate === null) {
-                foreach ($this->updateDateSynonyms as $updateDateSynonym) {
-                    if (stripos($line, $updateDateSynonym) !== false) {
-                        $updateDate = trim(str_ireplace($updateDateSynonym, '', $line));
-                        if (!empty($updateDate)) {
-                            $whoisObject->updateDate = $this->parseDate($updateDate);
-                            break;
-                        }
-                    }
-                }
+                $whoisObject->updateDate = $this->parseUpdateDate($line);
             }
 
-            foreach ($this->registryDomainIdSynonyms as $registryDomainIdSynonym) {
-                if (stripos($line, $registryDomainIdSynonym) !== false) {
-                    $registryDomainId = trim(str_ireplace($registryDomainIdSynonym, '', $line));
-                    if (!empty($registryDomainId)) {
-                        $whoisObject->registryDomainId = $registryDomainId;
-                        break;
-                    }
-                }
+            $whoisObject->registryDomainId = $this->parseRegistryDomainId($line);
+
+            $registrarName = $this->parseRegistrarName($line);;
+            if ($whoisObject->registrar === null && $registrarName !== null) {
+                $whoisObject->registrar       = new Registrar();
+                $whoisObject->registrar->name = $registrarName;
             }
 
-            foreach ($this->registrarSynonyms as $registrarSynonym) {
-                if ((stripos($line, $registrarSynonym) !== false)) {
-                    $registrarName = trim(str_ireplace($registrarSynonym, '', $line));
-                    if (!empty($registrarName)) {
-                        if ($whoisObject->registrar === null) {
-                            $whoisObject->registrar = new Registrar();
-                        }
-                        $whoisObject->registrar->name = $registrarName;
-                        break;
-                    }
-                }
-            }
-
-            foreach ($this->registrarIanaId as $registrarIanaId) {
-                if (stripos($line, $registrarIanaId) !== false) {
-                    $registrarId = trim(str_ireplace($registrarIanaId, '', $line));
-                    if (!empty($registrarId)) {
-                        if ($whoisObject->registrar === null) {
-                            $whoisObject->registrar = new Registrar();
-                        }
-                        $whoisObject->registrar->id = $registrarId;
-                        break;
-                    }
-                }
+            $registrarId = $this->parseRegistrarId($line);;
+            if ($whoisObject->registrar === null && $registrarId !== null) {
+                $whoisObject->registrar     = new Registrar();
+                $whoisObject->registrar->id = $registrarId;
             }
 
             foreach ($this->registrarAbuseContactEmailSynonyms as $registrarAbuseContactEmailSynonym) {
@@ -265,5 +203,133 @@ class BaseFormatter extends AbstractFormatter
     protected function reformatWhoisPlainRow(string $row): string
     {
         return $row;
+    }
+
+    /**
+     * @param  string  $whoisString
+     *
+     * @return string|null
+     */
+    protected function parseCreationDate(string $whoisString): ?string
+    {
+        foreach ($this->creationDateSynonyms as $creationDateSynonym) {
+            if (stripos($whoisString, $creationDateSynonym) !== false) {
+                if (strpos($whoisString, $this->unnecessaryWord) !== false) {
+                    $whoisString = str_replace($this->unnecessaryWord, '', $whoisString);
+                }
+                $creationDate = trim(str_ireplace($creationDateSynonym, '', $whoisString));
+                $creationDate = $this->afterCreationDateFound($creationDate);
+                if (!empty($creationDate)) {
+                    return $this->parseDate($creationDate);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  string  $whoisString
+     *
+     * @return string|null
+     */
+    protected function parseExpirationDate(string $whoisString): ?string
+    {
+            foreach ($this->expiryDateSynonyms as $expiryDateSynonym) {
+                if (stripos($whoisString, $expiryDateSynonym) !== false) {
+                    $expirationDate = trim(str_ireplace($expiryDateSynonym, '', $whoisString));
+                    if (!empty($expirationDate)) {
+                        return $this->parseDate($expirationDate);
+                    }
+                }
+            }
+
+            return null;
+    }
+
+    /**
+     * @param  string  $whoisString
+     *
+     * @return string|null
+     */
+    protected function parseUpdateDate(string $whoisString): ?string
+    {
+        foreach ($this->updateDateSynonyms as $updateDateSynonym) {
+            if (stripos($whoisString, $updateDateSynonym) !== false) {
+                $updateDate = trim(str_ireplace($updateDateSynonym, '', $whoisString));
+                if (!empty($updateDate)) {
+                    return $this->parseDate($updateDate);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  string  $whoisString
+     *
+     * @return string|null
+     */
+    protected function parseRegistryDomainId(string $whoisString): ?string
+    {
+        foreach ($this->registryDomainIdSynonyms as $registryDomainIdSynonym) {
+            if (stripos($whoisString, $registryDomainIdSynonym) !== false) {
+                $registryDomainId = trim(str_ireplace($registryDomainIdSynonym, '', $whoisString));
+                if (!empty($registryDomainId)) {
+                    return $registryDomainId;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  string  $whoisString
+     *
+     * @return string|null
+     */
+    protected function parseRegistrarName(string $whoisString): ?string
+    {
+        foreach ($this->registrarSynonyms as $registrarSynonym) {
+            if ((stripos($whoisString, $registrarSynonym) !== false)) {
+                $registrarName = trim(str_ireplace($registrarSynonym, '', $whoisString));
+                if (!empty($registrarName)) {
+                    return $registrarName;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  string  $whoisString
+     *
+     * @return string|null
+     */
+    protected function parseRegistrarId(string $whoisString): ?string
+    {
+        foreach ($this->registrarIanaId as $registrarIanaId) {
+            if (stripos($whoisString, $registrarIanaId) !== false) {
+                $registrarId = trim(str_ireplace($registrarIanaId, '', $whoisString));
+                if (!empty($registrarId)) {
+                    return $registrarId;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  string  $creationDate
+     *
+     * @return string
+     */
+    protected function afterCreationDateFound(string $creationDate): string
+    {
+        return $creationDate;
     }
 }

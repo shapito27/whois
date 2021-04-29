@@ -7,6 +7,9 @@ class FormatterFactory
     //domain zones which use similar format.
     public static $similarZones = [
         'ac.uk' => 'uk',
+        '.il' => 'il',
+        '.br' => 'com.br',
+
     ];
 
     /**
@@ -20,8 +23,10 @@ class FormatterFactory
             return new BaseFormatter();
         }
 
-        if (isset(self::$similarZones[$domainZone])) {
-            $domainZone = self::$similarZones[$domainZone];
+        foreach (self::$similarZones as $pattern => $destinationZone) {
+            if (strpos($domainZone, $pattern) !== false) {
+                $domainZone = self::$similarZones[$pattern];
+            }
         }
 
         //from co.uk to couk
