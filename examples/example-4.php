@@ -5,51 +5,48 @@ use Shapito27\Whois\WhoisParser;
 require_once __DIR__ . '/../vendor/autoload.php';
 
 //whois guardian.co.uk
-$domains = ["guardian.co.uk" => "\n
-    Domain name:\n
-        guardian.co.uk\n
-\n
-    Data validation:\n
-        Nominet was able to match the registrant's name and address against a 3rd party data source on 30-Oct-2015\n
-\n
-    Registrar:\n
-        GoDaddy.com, LLC. [Tag = GODADDY]\n
-        URL: http://uk.godaddy.com\n
-\n
-    Relevant dates:\n
-        Registered on: before Aug-1996\n
-        Expiry date:  16-Jun-2022\n
-        Last updated:  31-Oct-2019\n
-\n
-    Registration status:\n
-        Registered until expiry date.\n
-\n
-    Name servers:\n
-        dns1.p02.nsone.net\n
-        dns2.p02.nsone.net\n
-        dns3.p02.nsone.net\n
-        dns4.p02.nsone.net\n
-        ns01.theguardiandns.com\n
-        ns02.theguardiandns.com\n
-        ns03.theguardiandns.com\n
-        ns04.theguardiandns.com\n
-\n
-    WHOIS lookup made at 13:52:47 02-Nov-2020\n
-\n
--- \n
-This WHOIS information is provided for free by Nominet UK the central registry\n
-for .uk domain names. This information and the .uk WHOIS are:\n
-\n
-    Copyright Nominet UK 1996 - 2020.\n
-\n
-You may not access the .uk WHOIS or use any data from it except as permitted\n
-by the terms of use available in full at https://www.nominet.uk/whoisterms,\n
-which includes restrictions on: (A) use of the data for advertising, or its\n
-repackaging, recompilation, redistribution or reuse (B) obscuring, removing\n
-or hiding any or all of this notice and (C) exceeding query rate or volume\n
-limits. The data is provided on an 'as-is' basis and may lag behind the\n
-register. Access may be withdrawn or restricted at any time. \n
-",
+$domains = ["auto.co.uk" => <<<WHOIS2
+
+    Domain name:
+        auto.co.uk
+
+    Data validation:
+        Nominet was able to match the registrant's name and address against a 3rd party data source on 14-Dec-2017
+
+    Registrar:
+        eNom LLC [Tag = ENOM]
+        URL: http://www.enom.com
+
+    Relevant dates:
+        Registered on: 05-Oct-1996
+        Expiry date:  05-Oct-2021
+        Last updated:  06-Sep-2020
+
+    Registration status:
+        Registered until expiry date.
+
+    Name servers:
+        a.ns.keyweb.org
+        b.ns.keyweb.org
+        c.ns.keyweb.de
+
+    WHOIS lookup made at 04:33:17 29-Apr-2021
+
+-- 
+This WHOIS information is provided for free by Nominet UK the central registry
+for .uk domain names. This information and the .uk WHOIS are:
+
+    Copyright Nominet UK 1996 - 2021.
+
+You may not access the .uk WHOIS or use any data from it except as permitted
+by the terms of use available in full at https://www.nominet.uk/whoisterms,
+which includes restrictions on: (A) use of the data for advertising, or its
+repackaging, recompilation, redistribution or reuse (B) obscuring, removing
+or hiding any or all of this notice and (C) exceeding query rate or volume
+limits. The data is provided on an 'as-is' basis and may lag behind the
+register. Access may be withdrawn or restricted at any time.
+
+WHOIS2,
 "facebook.com" => <<<WHOIS
    Domain Name: FACEBOOK.COM
    Registry Domain ID: 2320948_DOMAIN_COM-VRSN
@@ -200,11 +197,10 @@ WHOIS
 
 $parser = new \Shapito27\Whois\WhoisParser();
 
-//you can set dates format in result
-$parser->setDateFormat('Y-m-d H:i:s');
 foreach($domains as $domain => $whoisText) {
     $parser->setDomainName($domain);
-
+    //set formatter each iteration
+    $parser->detectFormat();
     $parser->setWhoisText($whoisText);
 
     //run parsing whois data

@@ -5,51 +5,54 @@ use Shapito27\Whois\WhoisParser;
 require_once __DIR__ . '/../vendor/autoload.php';
 
 //whois guardian.co.uk
-$whoisText = "\n
-    Domain name:\n
-        guardian.co.uk\n
-\n
-    Data validation:\n
-        Nominet was able to match the registrant's name and address against a 3rd party data source on 30-Oct-2015\n
-\n
-    Registrar:\n
-        GoDaddy.com, LLC. [Tag = GODADDY]\n
-        URL: http://uk.godaddy.com\n
-\n
-    Relevant dates:\n
-        Registered on: before Aug-1996\n
-        Expiry date:  16-Jun-2022\n
-        Last updated:  31-Oct-2019\n
-\n
-    Registration status:\n
-        Registered until expiry date.\n
-\n
-    Name servers:\n
-        dns1.p02.nsone.net\n
-        dns2.p02.nsone.net\n
-        dns3.p02.nsone.net\n
-        dns4.p02.nsone.net\n
-        ns01.theguardiandns.com\n
-        ns02.theguardiandns.com\n
-        ns03.theguardiandns.com\n
-        ns04.theguardiandns.com\n
-\n
-    WHOIS lookup made at 13:52:47 02-Nov-2020\n
-\n
--- \n
-This WHOIS information is provided for free by Nominet UK the central registry\n
-for .uk domain names. This information and the .uk WHOIS are:\n
-\n
-    Copyright Nominet UK 1996 - 2020.\n
-\n
-You may not access the .uk WHOIS or use any data from it except as permitted\n
-by the terms of use available in full at https://www.nominet.uk/whoisterms,\n
-which includes restrictions on: (A) use of the data for advertising, or its\n
-repackaging, recompilation, redistribution or reuse (B) obscuring, removing\n
-or hiding any or all of this notice and (C) exceeding query rate or volume\n
-limits. The data is provided on an 'as-is' basis and may lag behind the\n
-register. Access may be withdrawn or restricted at any time. \n
-";
+$whoisText = <<<WHOIS2
+
+    Domain name:
+        guardian.co.uk
+
+    Data validation:
+        Nominet was able to match the registrant's name and address against a 3rd party data source on 30-Oct-2015
+
+    Registrar:
+        GoDaddy.com, LLC. [Tag = GODADDY]
+        URL: http://uk.godaddy.com
+
+    Relevant dates:
+        Registered on: before Aug-1996
+        Expiry date:  16-Jun-2023
+        Last updated:  13-Apr-2021
+
+    Registration status:
+        Registered until expiry date.
+
+    Name servers:
+        dns1.p02.nsone.net
+        dns2.p02.nsone.net
+        dns3.p02.nsone.net
+        dns4.p02.nsone.net
+        ns01.theguardiandns.com
+        ns02.theguardiandns.com
+        ns03.theguardiandns.com
+        ns04.theguardiandns.com
+
+    WHOIS lookup made at 16:26:30 27-Apr-2021
+
+-- 
+This WHOIS information is provided for free by Nominet UK the central registry
+for .uk domain names. This information and the .uk WHOIS are:
+
+    Copyright Nominet UK 1996 - 2021.
+
+You may not access the .uk WHOIS or use any data from it except as permitted
+by the terms of use available in full at https://www.nominet.uk/whoisterms,
+which includes restrictions on: (A) use of the data for advertising, or its
+repackaging, recompilation, redistribution or reuse (B) obscuring, removing
+                                                                   or hiding any or all of this notice and (C) exceeding query rate or volume
+limits. The data is provided on an 'as-is' basis and may lag behind the
+register. Access may be withdrawn or restricted at any time.
+
+WHOIS2;
+
 
 $parser = new WhoisParser('guardian.co.uk', $whoisText);
 $whoisParserResult = $parser->run();

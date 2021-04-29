@@ -1,6 +1,43 @@
 # Whois parser
-Lib for parsing whois response. 
-It takes response from any whois server and return object with structured data.
+Tool helps parsing whois response. 
+
+For example you have whois response as plain text:
+```angular2html
+
+    Domain name:
+        auto.uk
+
+    Data validation:
+        Nominet was able to match the registrant's name and address against a 3rd party data source on 14-Dec-2017
+
+    Registrar:
+        eNom LLC [Tag = ENOM]
+        URL: http://www.enom.com
+
+    Relevant dates:
+        Registered on: 23-Jun-2016
+        Expiry date:  23-Jun-2021
+        Last updated:  25-May-2020
+
+    Registration status:
+        Registered until expiry date.
+
+    Name servers:
+        a.ns.keyweb.org
+        b.ns.keyweb.org
+        c.ns.keyweb.de
+
+    WHOIS lookup made at 05:43:54 29-Apr-2021
+
+-- 
+This WHOIS information is provided for free by Nominet UK the central registry
+for .uk domain names. This information and the .uk WHOIS are:
+
+    Copyright Nominet UK 1996 - 2021.
+
+
+```
+This package analyzes it and return object with structured data.
 
 
 ## Install
@@ -8,13 +45,12 @@ It takes response from any whois server and return object with structured data.
 ## Example
 ([more detailed example](https://github.com/shapito27/whois/blob/main/tests/WhoisParserTest.php))
 
- **Input**: response of shell command ```whois facebook.com``` pass as ```$whoisText```
+lets imagine you use shell command ```whois facebook.com``` and want to parse it.
+
+ **Input**: domain name and ```$whoisText``` is response of shell command
  ```
 //set domain name and output of its whois data
 $parser = new \Shapito27\Whois\WhoisParser('facebook.com', $whoisText);
-
-//you can set dates format in result
-$parser->setDateFormat('Y-m-d H:i:s');
 
 //run parsing whois data
 $whoisParserResult = $parser->run();
@@ -65,11 +101,10 @@ $domains = [
 //set domain name and output of its whois data
 $parser = new \Shapito27\Whois\WhoisParser();
 
-//you can set dates format in result
-$parser->setDateFormat('Y-m-d H:i:s');
 foreach($domains as $domain => $whoisText) {
     $parser->setDomainName($domain);
-    
+    //set formatter each iteration
+    $parser->detectFormat();
     $parser->setWhoisText($whoisText);
     
     //run parsing whois data
