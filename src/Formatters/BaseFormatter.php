@@ -123,11 +123,13 @@ class BaseFormatter extends AbstractFormatter
         $domainAvailable = false;
         $errors = null;
 
+        //reformant Whois Plain Text before explode it to strings
+        $whoisPlainText = $this->reformatWhoisPlainText($whoisPlainText);
         $whoisStrings = explode($this->eol, $whoisPlainText);
 
         foreach ($whoisStrings as $lineNumber => $line) {
             //if have keyword domain not found it means domain is free
-            foreach ($this->domainNotFoundSynonyms as $domainNotFoundSynonym) {
+            foreach ($this->domainAvailableSynonyms as $domainNotFoundSynonym) {
                 if (strpos($line, $domainNotFoundSynonym) !== false) {
                     $domainAvailable = true;
                     $foundDomainNotFoundSynonym = $domainNotFoundSynonym;

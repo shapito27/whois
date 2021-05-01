@@ -45,7 +45,7 @@ abstract class AbstractFormatter
     ];
 
     /** @var array */
-    protected $domainNotFoundSynonyms = [];
+    protected $domainAvailableSynonyms = [];
 
     /** @var string */
     protected $unnecessaryWord = 'before';
@@ -72,8 +72,8 @@ abstract class AbstractFormatter
         $this->setNameServerSynonyms(
             json_decode(file_get_contents(self::DB_PATH.'name_server_synonyms.json'), true)['values']
         );
-        $this->setDomainNotFoundSynonyms(
-            json_decode(file_get_contents(self::DB_PATH.'domain_not_found_synonyms.json'), true)['values']
+        $this->setDomainAvailableSynonyms(
+            json_decode(file_get_contents(self::DB_PATH.'domain_available_synonyms.json'), true)['values']
         );
         $this->setRegistrarSynonyms(
             json_decode(file_get_contents(self::DB_PATH.'registrar_synonyms.json'), true)['values']
@@ -191,11 +191,11 @@ abstract class AbstractFormatter
     }
 
     /**
-     * @param  string[]  $domainNotFoundSynonyms
+     * @param  string[]  $domainAvailableSynonyms
      */
-    public function setDomainNotFoundSynonyms(array $domainNotFoundSynonyms): void
+    public function setDomainAvailableSynonyms(array $domainAvailableSynonyms): void
     {
-        $this->domainNotFoundSynonyms = $domainNotFoundSynonyms;
+        $this->domainAvailableSynonyms = $domainAvailableSynonyms;
     }
 
     /**
@@ -283,7 +283,7 @@ abstract class AbstractFormatter
      */
     public function addDomainNotFoundSynonym(string $domainNotFoundSynonym): void
     {
-        $this->domainNotFoundSynonyms[] = $domainNotFoundSynonym;
+        $this->domainAvailableSynonyms[] = $domainNotFoundSynonym;
     }
 
     public static function name()

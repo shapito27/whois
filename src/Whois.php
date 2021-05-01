@@ -8,6 +8,9 @@ namespace Shapito27\Whois;
  */
 class Whois
 {
+    /** @var string */
+    public $domain;
+
     /** @var string|null */
     public $creationDate;
     /** @var string|null */

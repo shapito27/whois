@@ -9,7 +9,8 @@ class FormatterFactory
         'ac.uk' => 'uk',
         '.il' => 'il',
         '.br' => 'com.br',
-
+        '.be' => 'be',
+        '.si' => 'si',
     ];
 
     /**

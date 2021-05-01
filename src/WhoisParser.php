@@ -55,6 +55,7 @@ class WhoisParser
             if (isset($isDomainAvailableResult['errors'])) {
                 $parserResult->setErrorMessage(implode('. ', $isDomainAvailableResult['errors']));
             }
+            $whoisObject->domain = $this->getDomainName();
             $parserResult->setWhois($whoisObject);
         } catch (Exception $e) {
             $errorMessage = $e->getMessage();

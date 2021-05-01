@@ -14,8 +14,8 @@ class COUK extends BaseFormatter
     protected function reformatWhoisPlainText(string $whoisPlainText): string
     {
         $whoisPlainText = str_replace(
-            array("Expiry date:", "Registered on:", "Last updated:"),
-            array("\n\nExpiry date:", "\n\nRegistered on:", "\n\nLast updated:"),
+            ["Expiry date:", "Registered on:", "Last updated:"],
+            ["\n\nExpiry date:", "\n\nRegistered on:", "\n\nLast updated:"],
             $whoisPlainText
         );
 
