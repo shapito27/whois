@@ -70,3 +70,4 @@ $parser = new WhoisParser('ucsd.edu', $whoisText);
 $whoisParserResult = $parser->run();
 
 var_dump($whoisParserResult->getWhois());
+var_dump($whoisParserResult->getErrorMessage());

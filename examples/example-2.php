@@ -75,3 +75,4 @@ $parser = new WhoisParser('car.co.il', $whoisText);
 $whoisParserResult = $parser->run();
 
 var_dump($whoisParserResult->getWhois());
+var_dump($whoisParserResult->getErrorMessage());

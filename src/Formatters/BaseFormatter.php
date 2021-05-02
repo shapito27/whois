@@ -18,7 +18,6 @@ class BaseFormatter extends AbstractFormatter
      */
     public function convertToWhoisObject(string $whoisPlainText): Whois
     {
-        $parseUpdateInfo            = true;
         $whoisObject = new Whois();
 
         //reformant Whois Plain Text before explode it to strings
@@ -47,11 +46,13 @@ class BaseFormatter extends AbstractFormatter
             }
 
             //looking for updated date
-            if ($parseUpdateInfo && $whoisObject->updateDate === null) {
+            if ($whoisObject->updateDate === null) {
                 $whoisObject->updateDate = $this->parseUpdateDate($line);
             }
 
-            $whoisObject->registryDomainId = $this->parseRegistryDomainId($line);
+            if ($whoisObject->registryDomainId === null) {
+                $whoisObject->registryDomainId = $this->parseRegistryDomainId($line);
+            }
 
             $registrarName = $this->parseRegistrarName($line);;
             if ($whoisObject->registrar === null && $registrarName !== null) {

@@ -54,3 +54,4 @@ $parser = new WhoisParser('gold.ac.uk', $whoisText);
 $whoisParserResult = $parser->run();
 
 var_dump($whoisParserResult->getWhois());
+var_dump($whoisParserResult->getErrorMessage());

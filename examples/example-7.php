@@ -50,3 +50,4 @@ $parser = new WhoisParser('saberweb.com.br', $whoisText);
 $whoisParserResult = $parser->run();
 
 var_dump($whoisParserResult->getWhois());
+var_dump($whoisParserResult->getErrorMessage());

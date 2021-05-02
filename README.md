@@ -117,5 +117,7 @@ foreach($domains as $domain => $whoisText) {
     
     //get and output whois object 
     var_dump($whoisParserResult->getWhois());
+    //display errors
+    var_dump($whoisParserResult->getErrorMessage());
 }
 ```

@@ -58,3 +58,4 @@ $parser = new WhoisParser('guardian.co.uk', $whoisText);
 $whoisParserResult = $parser->run();
 
 var_dump($whoisParserResult->getWhois());
+var_dump($whoisParserResult->getErrorMessage());

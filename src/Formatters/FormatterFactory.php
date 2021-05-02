@@ -11,6 +11,8 @@ class FormatterFactory
         '.br' => 'com.br',
         '.be' => 'be',
         '.si' => 'si',
+        '.kr' => 'kr',
+        '.it' => 'it',
     ];
 
     /**
