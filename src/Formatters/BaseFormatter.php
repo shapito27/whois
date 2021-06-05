@@ -11,6 +11,26 @@ class BaseFormatter extends AbstractFormatter
 {
     public $eol = "\n";
 
+    public const DOMAIN_AVAILABLE_STATUS_BY_KEYWORD = 1;
+    /** @var int domain is available because was found keyword, also creation and expiry date are empty */
+    public const DOMAIN_AVAILABLE_STATUS_BY_KEYWORD_CREATION_DATE_EXPIRY_DATE = 2;
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_CREATED_DATE = 10;
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_EXPIRY_DATE = 11;
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_NS = 12;
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_REGISTRAR = 13;
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_DOMAIN_ID = 14;
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_NO_DATA_PARSED = 15;
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_KEYWORD = 16;
+    /** @var int domain is not available because wasn't found keyword, and all this data are found: created date, expiry date, ns */
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_CREATED_DATE_EXPIRY_DATE_NS_NO_KEYWORD = 17;
+    /**
+     * @var int domain is not available because all this data are found: created date, expiry date, ns.
+     * But at the same time we found keyword. Need to fix keyword if we got this status!
+     */
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_CREATED_DATE_EXPIRY_DATE_NS_WITH_KEYWORD = 18;
+    /** @var int domain is not available because wasn't found keyword, and some of this data are found: created date, expiry date, ns */
+    public const DOMAIN_NOT_AVAILABLE_STATUS_BY_CREATED_DATE_OR_EXPIRY_DATE_OR_NS_NO_KEYWORD = 19;
+
     /**
      * @param  string  $whoisPlainText
      *
@@ -22,7 +42,7 @@ class BaseFormatter extends AbstractFormatter
 
         //reformant Whois Plain Text before explode it to strings
         $whoisPlainText = $this->reformatWhoisPlainText($whoisPlainText);
-        $whoisStrings = explode($this->eol, $whoisPlainText);
+        $whoisStrings   = explode($this->eol, $whoisPlainText);
         //remove empty lines
         foreach ($whoisStrings as $key => $line) {
             if ($line === '') {
@@ -122,48 +142,90 @@ class BaseFormatter extends AbstractFormatter
     public function isDomainAvailable(string $whoisPlainText, Whois $whoisObject): array
     {
         $domainAvailable = false;
+        /** @var array $errors list of errors */
         $errors = null;
+        /** @var int $domainAvailableStatus id identificator of reason why I set available true or false */
+        $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_KEYWORD;
+        /** @var string $foundDomainNotFoundSynonym set keyword found that means domain is available for registration */
+        $foundDomainNotFoundSynonym = null;
 
-        //reformant Whois Plain Text before explode it to strings
+        //reformat Whois Plain Text before explode it to strings
         $whoisPlainText = $this->reformatWhoisPlainText($whoisPlainText);
-        $whoisStrings = explode($this->eol, $whoisPlainText);
+        $whoisStrings   = explode($this->eol, $whoisPlainText);
 
         foreach ($whoisStrings as $lineNumber => $line) {
             //if have keyword domain not found it means domain is free
             foreach ($this->domainAvailableSynonyms as $domainNotFoundSynonym) {
                 if (strpos($line, $domainNotFoundSynonym) !== false) {
-                    $domainAvailable = true;
+                    $domainAvailable            = true;
                     $foundDomainNotFoundSynonym = $domainNotFoundSynonym;
+                    $domainAvailableStatus      = self::DOMAIN_AVAILABLE_STATUS_BY_KEYWORD;
                     break;
                 }
             }
         }
+
+        if ($domainAvailable === false) {
+            if (!empty($whoisObject->creationDate) && !empty($whoisObject->expirationDate) && !empty($whoisObject->nameServers)) {
+                $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_CREATED_DATE_EXPIRY_DATE_NS_NO_KEYWORD;
+
+                return [
+                    'is_available' => $domainAvailable,
+                    'errors'       => $errors,
+                    'status'       => $domainAvailableStatus,
+                ];
+            }
+
+            if (!empty($whoisObject->creationDate) || !empty($whoisObject->expirationDate) || !empty($whoisObject->nameServers)) {
+                $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_CREATED_DATE_OR_EXPIRY_DATE_OR_NS_NO_KEYWORD;
+
+                return [
+                    'is_available' => $domainAvailable,
+                    'errors'       => $errors,
+                    'status'       => $domainAvailableStatus,
+                ];
+            }
+        }
+
         try {
-//            if ($parserResult->isDomainAvailable()) {
             if ($domainAvailable === true) {
-                if ($whoisObject->expirationDate !== null) {
-                    $expirationDate = $this->parseDate($whoisObject->expirationDate);
-                    $today          = Carbon::now();
-                    if ($today->lessThan($expirationDate)) {
-                        throw new RuntimeException(
-                            'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain expiration date is in the future.'
-                        );
-                    }
+                if (!empty($whoisObject->creationDate) && !empty($whoisObject->expirationDate) && !empty($whoisObject->nameServers)) {
+                    $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_CREATED_DATE_EXPIRY_DATE_NS_WITH_KEYWORD;
+                    throw new RuntimeException(
+                        'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain creation date, expiry date and ns exist'
+                    );
+                }
+
+                if (!empty($whoisObject->creationDate)) {
+                    $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_CREATED_DATE;
+                    throw new RuntimeException(
+                        'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain creation date exists'
+                    );
+                }
+
+                if (!empty($whoisObject->expirationDate)) {
+                    $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_EXPIRY_DATE;
+                    throw new RuntimeException(
+                        'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain expiration date exists.'
+                    );
                 }
 
                 if (!empty($whoisObject->nameServers)) {
+                    $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_NS;
                     throw new RuntimeException(
                         'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain nameServers is not empty.'
                     );
                 }
 
                 if (!empty($whoisObject->registrar)) {
+                    $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_REGISTRAR;
                     throw new RuntimeException(
                         'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain has registrar.'
                     );
                 }
 
                 if (!empty($whoisObject->registryDomainId)) {
+                    $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_DOMAIN_ID;
                     throw new RuntimeException(
                         'Found phrase "'.$foundDomainNotFoundSynonym.'" that domain free but domain has registryDomainId.'
                     );
@@ -171,20 +233,23 @@ class BaseFormatter extends AbstractFormatter
             }
         } catch (RuntimeException $exception) {
             $domainAvailable = false;
-            $errors[] = $exception->getMessage() . ' Availability was switched to false.';
+            $errors[]        = $exception->getMessage().' Availability was switched to false.';
         }
 
-        if (empty($whoisObject->expirationDate) && empty($whoisObject->updateDate)) {
+        if (empty($whoisObject->expirationDate) && empty($whoisObject->updateDate) && empty($whoisObject->nameServers)) {
             if ($domainAvailable === false) {
-                $errors[] = 'Updated date and Expiration date is not parsed. No phrase that domain is free';
+                $domainAvailableStatus = self::DOMAIN_NOT_AVAILABLE_STATUS_BY_NO_DATA_PARSED;
+                $errors[]              = 'Updated date, Expiration date and NS are not parsed. No phrase that domain is free';
             } else {
-                $errors[] = 'Updated date and Expiration date is not parsed. Phrase that domain is free found: "'.$foundDomainNotFoundSynonym.'"';
+                $domainAvailableStatus = self::DOMAIN_AVAILABLE_STATUS_BY_KEYWORD_CREATION_DATE_EXPIRY_DATE;
+                $errors[]              = 'Updated date, Expiration date and NS are not parsed. Phrase that domain is free found: "'.$foundDomainNotFoundSynonym.'"';
             }
         }
 
         return [
             'is_available' => $domainAvailable,
-            'errors' => $errors,
+            'errors'       => $errors,
+            'status'       => $domainAvailableStatus,
         ];
     }
 
@@ -238,16 +303,16 @@ class BaseFormatter extends AbstractFormatter
      */
     protected function parseExpirationDate(string $whoisString): ?string
     {
-            foreach ($this->expiryDateSynonyms as $expiryDateSynonym) {
-                if (stripos($whoisString, $expiryDateSynonym) !== false) {
-                    $expirationDate = trim(str_ireplace($expiryDateSynonym, '', $whoisString));
-                    if (!empty($expirationDate)) {
-                        return $this->parseDate($expirationDate);
-                    }
+        foreach ($this->expiryDateSynonyms as $expiryDateSynonym) {
+            if (stripos($whoisString, $expiryDateSynonym) !== false) {
+                $expirationDate = trim(str_ireplace($expiryDateSynonym, '', $whoisString));
+                if (!empty($expirationDate)) {
+                    return $this->parseDate($expirationDate);
                 }
             }
+        }
 
-            return null;
+        return null;
     }
 
     /**

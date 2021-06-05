@@ -10,6 +10,9 @@ use Shapito27\Whois\Whois;
 abstract class AbstractFormatter
 {
     /** @var string */
+    public const DEFAULT_DATE_FORMAT = 'Y-m-d H:i:s';
+
+    /** @var string */
     protected $dateFormat = self::DEFAULT_DATE_FORMAT;
 
     /** @var array */
@@ -50,8 +53,6 @@ abstract class AbstractFormatter
     /** @var string */
     protected $unnecessaryWord = 'before';
 
-    /** @var string */
-    public const DEFAULT_DATE_FORMAT = 'Y-m-d H:i:s';
     /** @var string */
     protected const DB_PATH = __DIR__.'/../../db/';
 

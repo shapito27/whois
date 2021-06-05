@@ -15,6 +15,8 @@ class ParserResult
     protected $whois;
     /** @var bool */
     protected $isDomainAvailable;
+    /** @var int */
+    protected $domainAvailableStatus;
     /** @var null|string */
     protected $errorMessage;
 
@@ -52,6 +54,22 @@ class ParserResult
     public function setIsDomainAvailable(bool $isDomainAvailable): void
     {
         $this->isDomainAvailable = $isDomainAvailable;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDomainAvailableStatus(): int
+    {
+        return $this->domainAvailableStatus;
+    }
+
+    /**
+     * @param  int  $domainAvailableStatus
+     */
+    public function setDomainAvailableStatus(int $domainAvailableStatus): void
+    {
+        $this->domainAvailableStatus = $domainAvailableStatus;
     }
 
     /**

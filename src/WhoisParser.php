@@ -49,9 +49,13 @@ class WhoisParser
 
         try {
             $formatter = $this->getFormatter();
-            $whoisObject = $formatter->convertToWhoisObject($this->whoisText);
+            if ($formatter === null) {
+                throw new Exception('Formatter is not set');
+            }
+            $whoisObject             = $formatter->convertToWhoisObject($this->whoisText);
             $isDomainAvailableResult = $formatter->isDomainAvailable($this->whoisText, $whoisObject);
             $parserResult->setIsDomainAvailable($isDomainAvailableResult['is_available']);
+            $parserResult->setDomainAvailableStatus($isDomainAvailableResult['status']);
             if (isset($isDomainAvailableResult['errors'])) {
                 $parserResult->setErrorMessage(implode('. ', $isDomainAvailableResult['errors']));
             }
@@ -84,7 +88,7 @@ class WhoisParser
     {
         $this->domainName = $domainName;
         if ($domainName !== null && ($pos = strpos($domainName, '.')) !== false) {
-            $this->setDomainPublicSuffix(substr($domainName,$pos+1));
+            $this->setDomainPublicSuffix(substr($domainName, $pos + 1));
         }
     }
 
@@ -118,12 +122,12 @@ class WhoisParser
      */
     public function getFormatter(): ?AbstractFormatter
     {
-        if($this->formatter === null && empty($this->getDomainName())) {
+        if ($this->formatter === null && empty($this->getDomainName())) {
             throw new Exception('Can\'t set Formatter automatically because domain name is not set');
         }
 
         //set formatter by domain public suffix
-        if($this->formatter === null) {
+        if ($this->formatter === null) {
             $this->setFormatter(FormatterFactory::create($this->getDomainPublicSuffix()));
         }
 
@@ -143,7 +147,7 @@ class WhoisParser
      */
     public function detectFormat(): void
     {
-        if(empty($this->getDomainName())) {
+        if (empty($this->getDomainName())) {
             throw new Exception('Can\'t set Formatter automatically because domain name is not set');
         }
 
