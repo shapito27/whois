@@ -11,7 +11,7 @@ class IT extends BaseFormatter
     {
         parent::__construct();
 
-        $this->updateDateSynonyms = ['Last Update:'];
+        $this->setUpdateDateSynonyms(['Last Update:']);
     }
 
     /**

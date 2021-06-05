@@ -11,7 +11,7 @@ class BE extends BaseFormatter
     {
         parent::__construct();
 
-        $this->domainAvailableSynonyms = ["Status:	AVAILABLE"];
+        $this->setDomainAvailableSynonyms(["Status:	AVAILABLE"]);
     }
 
     /**
