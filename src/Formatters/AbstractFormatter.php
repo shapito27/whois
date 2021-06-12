@@ -50,8 +50,8 @@ abstract class AbstractFormatter
     /** @var array */
     protected $domainAvailableSynonyms = [];
 
-    /** @var string */
-    protected $unnecessaryWord = 'before';
+    /** @var array */
+    protected $unnecessaryWords = ['before', 'CLST'];
 
     /** @var string */
     protected const DB_PATH = __DIR__.'/../../db/';
@@ -200,11 +200,11 @@ abstract class AbstractFormatter
     }
 
     /**
-     * @param  string  $unnecessaryWord
+     * @param  array  $unnecessaryWords
      */
-    public function setUnnecessaryWord(string $unnecessaryWord): void
+    public function setUnnecessaryWords(array $unnecessaryWords): void
     {
-        $this->unnecessaryWord = $unnecessaryWord;
+        $this->unnecessaryWords = $unnecessaryWords;
     }
 
     /**

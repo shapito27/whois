@@ -13,16 +13,11 @@ class FormatterFactory
      */
     public static $similarZones = [
         'ac.uk' => 'uk',
-        '.il'   => 'il',
-        '.br'   => 'com.br',
-        '.be'   => 'be',
-        '.si'   => 'si',
-        '.kr'   => 'kr',
-        '.it'   => 'it',
+        'br'    => 'com.br',
     ];
 
     /**
-     * @param  string|null  $domainZone
+     * @param  string|null  $domainZone co.uk|com|in|ru
      *
      * @return AbstractFormatter
      */
@@ -33,8 +28,8 @@ class FormatterFactory
         }
 
         foreach (self::$similarZones as $pattern => $destinationZone) {
-            if (strpos($domainZone, $pattern) !== false) {
-                $domainZone = self::$similarZones[$pattern];
+            if (($domainZone === $pattern)) {
+                $domainZone = $destinationZone;
             }
         }
 

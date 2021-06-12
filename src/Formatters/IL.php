@@ -10,8 +10,10 @@ class IL extends BaseFormatter
     protected function parseCreationDate(string $whoisString): ?string
     {
         if (stripos($whoisString, $this->creationDateSynonym) !== false) {
-            if (strpos($whoisString, $this->unnecessaryWord) !== false) {
-                $whoisString = str_replace($this->unnecessaryWord, '', $whoisString);
+            foreach ($this->unnecessaryWords as $unnecessaryWord) {
+                if (stripos($whoisString, $unnecessaryWord) !== false) {
+                    $whoisString = str_replace($unnecessaryWord, '', $whoisString);
+                }
             }
             $creationDate = trim(str_ireplace($this->creationDateSynonym, '', $whoisString));
             $creationDate = $this->afterCreationDateFound($creationDate);

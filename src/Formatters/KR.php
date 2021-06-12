@@ -13,8 +13,10 @@ class KR extends BaseFormatter
     {
         foreach ($this->creationDateSynonyms as $creationDateSynonym) {
             if (stripos($whoisString, $creationDateSynonym) !== false) {
-                if (strpos($whoisString, $this->unnecessaryWord) !== false) {
-                    $whoisString = str_replace($this->unnecessaryWord, '', $whoisString);
+                foreach ($this->unnecessaryWords as $unnecessaryWord) {
+                    if (stripos($whoisString, $unnecessaryWord) !== false) {
+                        $whoisString = str_replace($unnecessaryWord, '', $whoisString);
+                    }
                 }
                 $creationDate = trim(str_ireplace([$creationDateSynonym, '. ', '.'], ['', '', ''], $whoisString));
                 $creationDate = $this->afterCreationDateFound($creationDate);
