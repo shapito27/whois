@@ -12,7 +12,7 @@ class IL extends BaseFormatter
         if (stripos($whoisString, $this->creationDateSynonym) !== false) {
             foreach ($this->unnecessaryWords as $unnecessaryWord) {
                 if (stripos($whoisString, $unnecessaryWord) !== false) {
-                    $whoisString = str_replace($unnecessaryWord, '', $whoisString);
+                    $whoisString = trim(str_ireplace($unnecessaryWord, '', $whoisString));
                 }
             }
             $creationDate = trim(str_ireplace($this->creationDateSynonym, '', $whoisString));

@@ -284,7 +284,7 @@ class BaseFormatter extends AbstractFormatter
             if (stripos($whoisString, $creationDateSynonym) !== false) {
                 foreach ($this->unnecessaryWords as $unnecessaryWord) {
                     if (stripos($whoisString, $unnecessaryWord) !== false) {
-                        $whoisString = str_replace($unnecessaryWord, '', $whoisString);
+                        $whoisString = trim(str_ireplace($unnecessaryWord, '', $whoisString));
                     }
                 }
                 $creationDate = trim(str_ireplace($creationDateSynonym, '', $whoisString));
