@@ -307,6 +307,11 @@ class BaseFormatter extends AbstractFormatter
     {
         foreach ($this->expiryDateSynonyms as $expiryDateSynonym) {
             if (stripos($whoisString, $expiryDateSynonym) !== false) {
+                foreach ($this->unnecessaryWords as $unnecessaryWord) {
+                    if (stripos($whoisString, $unnecessaryWord) !== false) {
+                        $whoisString = trim(str_ireplace($unnecessaryWord, '', $whoisString));
+                    }
+                }
                 $expirationDate = trim(str_ireplace($expiryDateSynonym, '', $whoisString));
                 if (!empty($expirationDate)) {
                     return $this->parseDate($expirationDate);
@@ -326,6 +331,11 @@ class BaseFormatter extends AbstractFormatter
     {
         foreach ($this->updateDateSynonyms as $updateDateSynonym) {
             if (stripos($whoisString, $updateDateSynonym) !== false) {
+                foreach ($this->unnecessaryWords as $unnecessaryWord) {
+                    if (stripos($whoisString, $unnecessaryWord) !== false) {
+                        $whoisString = trim(str_ireplace($unnecessaryWord, '', $whoisString));
+                    }
+                }
                 $updateDate = trim(str_ireplace($updateDateSynonym, '', $whoisString));
                 if (!empty($updateDate)) {
                     return $this->parseDate($updateDate);
