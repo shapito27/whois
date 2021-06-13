@@ -9,6 +9,7 @@ use Shapito27\Whois\Whois;
 
 class BaseFormatter extends AbstractFormatter
 {
+    /** @var string We will split whois plain text by this symbol for convinient serch of keywords and its values */
     public $eol = "\n";
 
     public const DOMAIN_AVAILABLE_STATUS_BY_KEYWORD = 1;
@@ -74,15 +75,18 @@ class BaseFormatter extends AbstractFormatter
                 $whoisObject->registryDomainId = $this->parseRegistryDomainId($line);
             }
 
-            $registrarName = $this->parseRegistrarName($line);;
-            if ($whoisObject->registrar === null && $registrarName !== null) {
-                $whoisObject->registrar       = new Registrar();
+            $registrarName = $this->parseRegistrarName($line);
+            if ($registrarName !== null) {
+                if ($whoisObject->registrar === null) {
+                    $whoisObject->registrar = new Registrar();
+                }
                 $whoisObject->registrar->name = $registrarName;
             }
-
-            $registrarId = $this->parseRegistrarId($line);;
-            if ($whoisObject->registrar === null && $registrarId !== null) {
-                $whoisObject->registrar     = new Registrar();
+            $registrarId = $this->parseRegistrarId($line);
+            if ($registrarId !== null) {
+                if ($whoisObject->registrar === null) {
+                    $whoisObject->registrar = new Registrar();
+                }
                 $whoisObject->registrar->id = $registrarId;
             }
 

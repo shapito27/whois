@@ -252,7 +252,7 @@ abstract class AbstractFormatter
      */
     public function addRegistrarIanaId(string $registrarIanaId): void
     {
-        $this->registrarIanaId = $registrarIanaId;
+        $this->registrarIanaId[] = $registrarIanaId;
     }
 
     /**

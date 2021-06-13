@@ -1,7 +1,7 @@
 # Whois parser
-Tool helps parsing whois response. 
+Tool helps parsing **whois response**. 
 
-For example you have whois response as plain text:
+You got response as plain text(for example by [Ubuntu package whois](https://packages.ubuntu.com/en/groovy/net/whois) or any other tool):
 ```angular2html
 
     Domain name:
