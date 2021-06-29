@@ -121,3 +121,7 @@ foreach($domains as $domain => $whoisText) {
     var_dump($whoisParserResult->getErrorMessage());
 }
 ```
+
+
+### Projects use this lib
+[bestdrop.io](https://bestdrop.io)

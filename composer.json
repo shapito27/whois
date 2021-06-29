@@ -2,7 +2,7 @@
     "name": "shapito27/whois-parser",
     "description": "Tool to parse whois response",
     "keywords": ["whois","parser"],
-    "version": "1.10.1",
+    "version": "1.10.2",
     "license": "MIT",
     "authors": [
         {
