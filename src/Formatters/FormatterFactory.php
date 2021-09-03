@@ -13,6 +13,7 @@ class FormatterFactory
      */
     public static $similarZones = [
         'ac.uk' => 'uk',
+        'org.uk' => 'co.uk',
         'br'    => 'com.br', //will catch domain zone br and will use COMBR.php formatter
 
         '.il'   => 'il', //will catch all domains like ac.il or co.il or org.il, net.il etc.
