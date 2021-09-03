@@ -115,24 +115,11 @@ class BaseFormatter extends AbstractFormatter
                     }
                 }
             }
-
-            //looking for name_servers
-            foreach ($this->nameServerSynonyms as $nameServerSynonym) {
-                if (stripos($line, $nameServerSynonym) !== false) {
-                    $nameServer = strtolower(trim(str_ireplace($nameServerSynonym, '', $line)));
-                    if (!empty($nameServer)) {
-                        //if have other data we do not need after space
-                        if (strpos($nameServer, ' ') !== false) {
-                            $nameServer = substr($nameServer, 0, strpos($nameServer, ' '));
-                        }
-                        if (in_array($nameServer, $whoisObject->nameServers, true) === false) {
-                            $whoisObject->nameServers[] = $nameServer;
-                        }
-                        break;
-                    }
-                }
-            }
         }
+
+        $whoisObject->nameServers = $this->parseNameServers($whoisStrings);
+
+
 
         return $whoisObject;
     }
@@ -415,5 +402,36 @@ class BaseFormatter extends AbstractFormatter
     protected function afterCreationDateFound(string $creationDate): string
     {
         return $creationDate;
+    }
+
+    /**
+     * @param  string  $whoisString
+     *
+     * @return array
+     */
+    protected function parseNameServers(array $whoisStrings): array
+    {
+        $nameServersList = [];
+
+        foreach ($whoisStrings as $lineNumber => $line) {
+            //looking for name_servers
+            foreach ($this->nameServerSynonyms as $nameServerSynonym) {
+                if (stripos($line, $nameServerSynonym) !== false) {
+                    $nameServer = strtolower(trim(str_ireplace($nameServerSynonym, '', $line)));
+                    if (!empty($nameServer)) {
+                        //if have other data we do not need after space
+                        if (strpos($nameServer, ' ') !== false) {
+                            $nameServer = substr($nameServer, 0, strpos($nameServer, ' '));
+                        }
+                        if (in_array($nameServer, $nameServersList, true) === false) {
+                            $nameServersList[] = $nameServer;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $nameServersList;
     }
 }
